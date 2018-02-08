@@ -14,8 +14,10 @@
 
 @property (weak, nonatomic) IBOutlet UITableView *deviceTable;
 @property (weak, nonatomic) IBOutlet UITableView *charTable;
-@property (weak, nonatomic) IBOutlet UIButton *scanButton;
+@property (weak, nonatomic) IBOutlet UIButton *scanAlwaysButton;
+@property (weak, nonatomic) IBOutlet UIButton *scanOnceButton;
 @property (weak, nonatomic) IBOutlet UIButton *writeButton;
+@property (weak, nonatomic) IBOutlet UIButton *stopScanButton;
 @property (weak, nonatomic) IBOutlet UILabel *genStringLabel;
 @property (weak, nonatomic) IBOutlet UILabel *connectStatusLabel;
 @property (weak, nonatomic) IBOutlet UILabel *statusOfScanning;
@@ -155,7 +157,7 @@ NSMutableArray *charValuelList;
     case CBManagerStateUnsupported:
     case CBManagerStateUnauthorized:
     case CBManagerStatePoweredOff:
-      _statusOfScanning.text = @"off";
+      _statusOfScanning.text = @"Search status: BLE Off";
       NSLog(@"Error... Check Bluetooth connection.");
       break;
       
@@ -263,6 +265,7 @@ NSMutableArray *charValuelList;
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
   
   NSLog(@"Disconnect Peripheral");
+  
   _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Disconnect"];
 }
 
@@ -280,18 +283,21 @@ NSMutableArray *charValuelList;
     // Clear current data before new scanning
     [self clearData];
     
-    _statusOfScanning.text = @"Status: scan...";
-    _scanButton.enabled = false;
-    
+    _statusOfScanning.text = @"Search status: scan...";
+    _scanOnceButton.enabled = false;
+    _scanAlwaysButton.enabled = false;
+
     NSLog(@"Start scanning...");
     [_centralManager scanForPeripheralsWithServices:nil options:nil];
     
     // End the scan after 5 seconds
-    [NSTimer scheduledTimerWithTimeInterval:3.0
+    if (sender == _scanOnceButton) {
+      [NSTimer scheduledTimerWithTimeInterval:3.0
                                      target:self
                                    selector:@selector(stopScanning)
                                    userInfo:nil
                                     repeats:NO];
+    }
   }
 }
 
@@ -324,11 +330,20 @@ NSMutableArray *charValuelList;
 }
 
 
+// Stop always scan
+- (IBAction)stopScan:(id)sender {
+  [self stopScanning];
+}
+
+
 // Break the connection
 - (IBAction)doDisconnect:(id)sender {
   
-  if (_trackerPeripheral != nil)
+  if (_trackerPeripheral != nil) {
     [_centralManager cancelPeripheralConnection:_trackerPeripheral];
+    [self clearData];
+    [_charTable reloadData];
+  }
 }
 
 //****************************************
@@ -338,9 +353,11 @@ NSMutableArray *charValuelList;
 // Stop scanning
 - (void)stopScanning {
   isScan = false;
-  _statusOfScanning.text = @"Status: stop";
-  _scanButton.enabled = true;
-  
+  _statusOfScanning.text = @"Search status: stop";
+  _scanOnceButton.enabled = true;
+  _scanAlwaysButton.enabled = true;
+  _stopScanButton.enabled = false;
+
   NSLog(@"Stop");
   [_centralManager stopScan];
 }
