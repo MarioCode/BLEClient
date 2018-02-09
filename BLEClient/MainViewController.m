@@ -8,8 +8,6 @@
 
 #import "MainViewController.h"
 
-#define TRACKER_SERVICE_UUID           @"0000ffe1-0000-1000-8000-00805f8b34fb"
-
 @interface MainViewController () <UITableViewDataSource, UITableViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *deviceTable;
@@ -57,9 +55,8 @@ NSMutableArray *charValuelList;
 }
 
 
-//****************************************
-// Table View
-//****************************************
+#pragma mark -
+#pragma mark Table View
 
 
 // Config cell
@@ -99,7 +96,7 @@ NSMutableArray *charValuelList;
     
     charCell.uuidLabel.text =[@"UUID: "stringByAppendingString:charService.UUID.UUIDString];
     
-    if (charValuelList.count != 0 && indexPath.row != charValuelList.count)
+    if (charValuelList.count != 0 && indexPath.row < charValuelList.count)
       charCell.valueLabel.text =[@"Value: "stringByAppendingString: [charValuelList objectAtIndex:indexPath.row]];
     
     return charCell;
@@ -143,9 +140,8 @@ NSMutableArray *charValuelList;
 }
 
 
-//****************************************
-// Bluetooth Low Energy
-//****************************************
+#pragma mark -
+#pragma mark Bluetooth Low Energy
 
 
 // Update status of central manager (current device)
@@ -173,16 +169,31 @@ NSMutableArray *charValuelList;
   _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Connected!"];
   
   NSLog(@"Connected!");
-  [_trackerPeripheral discoverServices:@[[CBUUID UUIDWithString:TRACKER_SERVICE_UUID]]];
+  [_trackerPeripheral discoverServices:@[[CBUUID UUIDWithString:PeripheryInfo.pService]]];
 }
 
 
 // Find peripheral devices and update table
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
   
+  if (RSSI.intValue < -30) {
+    // return;
+    // Uncomment above to ignore device with less signal strength
+  }
+  
   NSString *name = peripheral.name;
   if (name == nil)
     name = @"nil";
+  
+  if ([name  isEqual: PeripheryInfo.deviceName]) {
+    // Comment this "return" to get the whole list of devices
+    return;
+    
+    [self stopScanning];
+    _trackerPeripheral = peripheral;
+    _trackerPeripheral.delegate = self;
+    [_centralManager connectPeripheral:_trackerPeripheral options:nil];
+  }
   
   if (![peripheralList containsObject:peripheral])
     [peripheralList addObject:peripheral];
@@ -264,25 +275,31 @@ NSMutableArray *charValuelList;
 // Disconnected
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
   
-  NSLog(@"Disconnect Peripheral");
+  NSLog(@"Disconnect from %@", peripheral.identifier.UUIDString);
   
   _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Disconnect"];
+  [_centralManager connectPeripheral:_trackerPeripheral options:nil];
 }
 
 
-//****************************************
-// Button Action
-//****************************************
+#pragma mark -
+#pragma mark Button Action
 
 
 // Scan button action (start scanning)
 - (IBAction)scanBluetoothDevices:(id)sender {
-  isScan = true;
   
-  if (isScan) {
+  if (_centralManager.isScanning) {
+    NSLog(@"Central Manager is already scanning!!");
+    return;
+  }
+  
+  if (!isScan) {
+    
     // Clear current data before new scanning
     [self clearData];
     
+    isScan = true;
     _statusOfScanning.text = @"Search status: scan...";
     _scanOnceButton.enabled = false;
     _scanAlwaysButton.enabled = false;
@@ -342,13 +359,13 @@ NSMutableArray *charValuelList;
   if (_trackerPeripheral != nil) {
     [_centralManager cancelPeripheralConnection:_trackerPeripheral];
     [self clearData];
-    [_charTable reloadData];
   }
 }
 
-//****************************************
-// Helpers
-//****************************************
+
+#pragma mark -
+#pragma mark Helpers
+
 
 // Stop scanning
 - (void)stopScanning {
@@ -368,6 +385,7 @@ NSMutableArray *charValuelList;
   [charValuelList removeAllObjects];
   [characteristicslList removeAllObjects];
   [_charTable reloadData];
+  [_deviceTable reloadData];
 }
 
 // Generate random string

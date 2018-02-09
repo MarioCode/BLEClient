@@ -14,6 +14,7 @@
 		770B73C420288D310099BC63 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 770B73C220288D310099BC63 /* LaunchScreen.storyboard */; };
 		770B73C720288D310099BC63 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 770B73C620288D310099BC63 /* main.m */; };
 		778CF08F202B223C0018B009 /* CharTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 778CF08E202B223C0018B009 /* CharTableViewCell.m */; };
+		778CF092202DA1960018B009 /* Periphery.m in Sources */ = {isa = PBXBuildFile; fileRef = 778CF091202DA1960018B009 /* Periphery.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,8 @@
 		770B73C620288D310099BC63 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		778CF08D202B223C0018B009 /* CharTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CharTableViewCell.h; sourceTree = "<group>"; };
 		778CF08E202B223C0018B009 /* CharTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CharTableViewCell.m; sourceTree = "<group>"; };
+		778CF090202DA1960018B009 /* Periphery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Periphery.h; sourceTree = "<group>"; };
+		778CF091202DA1960018B009 /* Periphery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Periphery.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +68,8 @@
 				770B73B820288D310099BC63 /* AppDelegate.m */,
 				770B73BA20288D310099BC63 /* MainViewController.h */,
 				770B73BB20288D310099BC63 /* MainViewController.m */,
+				778CF090202DA1960018B009 /* Periphery.h */,
+				778CF091202DA1960018B009 /* Periphery.m */,
 				770B73BD20288D310099BC63 /* Main.storyboard */,
 				770B73C020288D310099BC63 /* Assets.xcassets */,
 				770B73C220288D310099BC63 /* LaunchScreen.storyboard */,
@@ -153,6 +158,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				770B73BC20288D310099BC63 /* MainViewController.m in Sources */,
+				778CF092202DA1960018B009 /* Periphery.m in Sources */,
 				770B73C720288D310099BC63 /* main.m in Sources */,
 				770B73B920288D310099BC63 /* AppDelegate.m in Sources */,
 				778CF08F202B223C0018B009 /* CharTableViewCell.m in Sources */,

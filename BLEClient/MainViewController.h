@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "CharTableViewCell.h"
+#import "Periphery.h"
 
 @interface MainViewController : UIViewController
 
