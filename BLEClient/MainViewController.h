@@ -10,6 +10,7 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "CharTableViewCell.h"
 #import "Periphery.h"
+#import "UDPManager.h"
 
 @interface MainViewController : UIViewController
 

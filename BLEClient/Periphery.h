@@ -8,10 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-extern const struct PeripheryInfoStruct
+extern struct PeripheryInfoStruct
 {
-  __unsafe_unretained NSString * const pService;
-  __unsafe_unretained NSString * const pCharacteristics;
+  __unsafe_unretained NSString * pService;
+  __unsafe_unretained NSString * pCharacteristics;
   __unsafe_unretained NSString * const deviceName;
 } PeripheryInfo;
 

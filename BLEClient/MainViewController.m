@@ -16,10 +16,15 @@
 @property (weak, nonatomic) IBOutlet UIButton *scanOnceButton;
 @property (weak, nonatomic) IBOutlet UIButton *writeButton;
 @property (weak, nonatomic) IBOutlet UIButton *stopScanButton;
+@property (weak, nonatomic) IBOutlet UIButton *changeServiceUUID;
 @property (weak, nonatomic) IBOutlet UILabel *genStringLabel;
 @property (weak, nonatomic) IBOutlet UILabel *connectStatusLabel;
 @property (weak, nonatomic) IBOutlet UILabel *statusOfScanning;
 @property (weak, nonatomic) IBOutlet UILabel *selectedDevice;
+@property (weak, nonatomic) IBOutlet UILabel *serviceUUID;
+@property (weak, nonatomic) IBOutlet UISwitch *udpSwitch;
+
+@property (strong, nonatomic) UDPManager *udpSocket;
 
 @end
 
@@ -34,6 +39,7 @@
 @implementation MainViewController
 
 BOOL isScan = false;
+BOOL isSend = false;
 NSMutableArray <CBPeripheral *> *peripheralList;
 NSMutableArray <CBCharacteristic *> *characteristicslList;
 NSMutableArray *charValuelList;
@@ -43,6 +49,7 @@ NSMutableArray *charValuelList;
   [super viewDidLoad];
   
   _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
+  _udpSocket = [[UDPManager alloc] init];
   
   peripheralList = [[NSMutableArray alloc] init];
   characteristicslList = [[NSMutableArray alloc] init];
@@ -98,6 +105,8 @@ NSMutableArray *charValuelList;
     
     if (charValuelList.count != 0 && indexPath.row < charValuelList.count)
       charCell.valueLabel.text =[@"Value: "stringByAppendingString: [charValuelList objectAtIndex:indexPath.row]];
+    else
+      charCell.valueLabel.text = @"Value: none";
     
     return charCell;
   }
@@ -170,6 +179,7 @@ NSMutableArray *charValuelList;
   
   NSLog(@"Connected!");
   [_trackerPeripheral discoverServices:@[[CBUUID UUIDWithString:PeripheryInfo.pService]]];
+  _serviceUUID.text = PeripheryInfo.pService;
 }
 
 
@@ -186,7 +196,7 @@ NSMutableArray *charValuelList;
     name = @"nil";
   
   if ([name  isEqual: PeripheryInfo.deviceName]) {
-    // Comment this "return" to get the whole list of devices
+    // Uncomment this "return" to get the whole list of devices
     return;
     
     [self stopScanning];
@@ -267,6 +277,7 @@ NSMutableArray *charValuelList;
 // Connect is fail
 - (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
   
+  isSend = false;
   _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Failed"];
   NSLog(@"Failed to connect");
 }
@@ -275,6 +286,7 @@ NSMutableArray *charValuelList;
 // Disconnected
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
   
+  isSend = false;
   NSLog(@"Disconnect from %@", peripheral.identifier.UUIDString);
   
   _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Disconnect"];
@@ -353,6 +365,18 @@ NSMutableArray *charValuelList;
 }
 
 
+// Change UDP Switch
+- (IBAction)updControlChange:(id)sender {
+  if (_udpSwitch.isOn && _centralManager.state == CBManagerStatePoweredOn) {
+    (isSend = true);
+  } else {
+    isSend = false;
+  }
+
+  [_udpSocket sendMsg:@"test"];
+}
+
+
 // Break the connection
 - (IBAction)doDisconnect:(id)sender {
   
@@ -360,6 +384,32 @@ NSMutableArray *charValuelList;
     [_centralManager cancelPeripheralConnection:_trackerPeripheral];
     [self clearData];
   }
+}
+
+
+// Change UUID Service
+- (IBAction)changeServiceUUID:(id)sender {
+  UIAlertController * alertController = [UIAlertController alertControllerWithTitle: @"UUID"
+                                                                            message: @"Set new Service UUID for select device"
+                                                                     preferredStyle:UIAlertControllerStyleAlert];
+  [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+    textField.placeholder = @"UUID";
+    textField.textColor = [UIColor blueColor];
+    textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    textField.borderStyle = UITextBorderStyleRoundedRect;
+  }];
+  
+  [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    NSString *uuidString = alertController.textFields[0].text;
+    NSLog(@"%@", uuidString);
+    
+    _serviceUUID.text = uuidString;
+    PeripheryInfo.pService = uuidString;
+
+    NSLog(@"%@", PeripheryInfo.pService);
+  }]];
+  
+  [self presentViewController:alertController animated:YES completion:nil];
 }
 
 
@@ -387,6 +437,7 @@ NSMutableArray *charValuelList;
   [_charTable reloadData];
   [_deviceTable reloadData];
 }
+
 
 // Generate random string
 -(NSString *) randomStringWithLength: (int) len {

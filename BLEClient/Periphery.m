@@ -8,8 +8,8 @@
 
 #import "Periphery.h"
 
-const struct PeripheryInfoStruct PeripheryInfo = {
-  .pService = @"0000ffe1-0000-1000-8000-00805f8b34fb",
+struct PeripheryInfoStruct PeripheryInfo = {
+  .pService = @"5c067605-176a-4e56-b36b-b401f51c57f3",
   .pCharacteristics = @"88CAE6D3-4AA8-4601-97E0-0D21F17FCDDA",
-  .deviceName = @"G5 SE"
+  .deviceName = @"Galaxy J2 Prime"
 };
