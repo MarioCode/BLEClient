@@ -8,7 +8,7 @@
 
 #import "MainViewController.h"
 
-@interface MainViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface MainViewController () <UITableViewDataSource, UITableViewDelegate, BLEManagerDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *deviceTable;
 @property (weak, nonatomic) IBOutlet UITableView *charTable;
@@ -22,43 +22,32 @@
 @property (weak, nonatomic) IBOutlet UILabel *statusOfScanning;
 @property (weak, nonatomic) IBOutlet UILabel *selectedDevice;
 @property (weak, nonatomic) IBOutlet UILabel *serviceUUID;
+@property (weak, nonatomic) IBOutlet UILabel *scanAllDevices;
 @property (weak, nonatomic) IBOutlet UISwitch *udpSwitch;
 
 @property (strong, nonatomic) UDPManager *udpSocket;
+@property (strong, nonatomic) BLEManager *bleManager;
 
 @end
 
-
-@interface MainViewController () <CBCentralManagerDelegate, CBPeripheralDelegate>
-
-@property (strong, nonatomic) CBCentralManager *centralManager;
-@property (strong, nonatomic) CBPeripheral *trackerPeripheral;
-
-@end
 
 @implementation MainViewController
 
-BOOL isScan = false;
 BOOL isSend = false;
-NSMutableArray <CBPeripheral *> *peripheralList;
-NSMutableArray <CBCharacteristic *> *characteristicslList;
-NSMutableArray *charValuelList;
-
+BOOL isAllDevices = false;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
   
-  _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
   _udpSocket = [[UDPManager alloc] init];
-  
-  peripheralList = [[NSMutableArray alloc] init];
-  characteristicslList = [[NSMutableArray alloc] init];
-  charValuelList = [[NSMutableArray alloc] init];
+  _bleManager = [[BLEManager alloc] init];
   
   _deviceTable.dataSource = self;
-  _deviceTable.delegate = self;
   _charTable.dataSource = self;
+  
+  _deviceTable.delegate = self;
   _charTable.delegate = self;
+  _bleManager.delegate = self;
 }
 
 
@@ -74,17 +63,18 @@ NSMutableArray *charValuelList;
   if (tableView == _deviceTable) {
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellID];
     
-    NSString *name = [peripheralList objectAtIndex:indexPath.row].name;
+    NSString *name = [_bleManager.peripheralList  objectAtIndex:indexPath.row].name;
     if (name == nil)
       name = @"nil";
     
     cell.textLabel.text = name;
-    cell.detailTextLabel.text = [peripheralList objectAtIndex:indexPath.row].identifier.UUIDString;
+    cell.detailTextLabel.text = [_bleManager.peripheralList objectAtIndex:indexPath.row].identifier.UUIDString;
     
   } else if (tableView == _charTable) {
     CharTableViewCell *charCell = (CharTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"charCell"];
     
-    CBCharacteristic *charService = [characteristicslList objectAtIndex:indexPath.row];
+    //TODO: Remove CB from this controller
+    CBCharacteristic *charService = [_bleManager.characteristicslList objectAtIndex:indexPath.row];
     
     if (charService.properties & CBCharacteristicPropertyWrite)
       charCell.writeLabel.text = @"Write: +";
@@ -103,8 +93,8 @@ NSMutableArray *charValuelList;
     
     charCell.uuidLabel.text =[@"UUID: "stringByAppendingString:charService.UUID.UUIDString];
     
-    if (charValuelList.count != 0 && indexPath.row < charValuelList.count)
-      charCell.valueLabel.text =[@"Value: "stringByAppendingString: [charValuelList objectAtIndex:indexPath.row]];
+    if (_bleManager.charValuelList.count != 0 && indexPath.row < _bleManager.charValuelList.count)
+      charCell.valueLabel.text =[@"Value: "stringByAppendingString: [_bleManager.charValuelList objectAtIndex:indexPath.row]];
     else
       charCell.valueLabel.text = @"Value: none";
     
@@ -119,9 +109,9 @@ NSMutableArray *charValuelList;
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
   
   if (tableView == _deviceTable)
-    return peripheralList.count;
+    return _bleManager.peripheralList.count;
   if (tableView == _charTable)
-    return characteristicslList.count;
+    return _bleManager.characteristicslList.count;
   
   return 0;
 }
@@ -131,166 +121,17 @@ NSMutableArray *charValuelList;
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
   if (tableView == _deviceTable) {
-    [self clearData];
+    [_bleManager clearData];
     
-    NSString *name = [peripheralList objectAtIndex:indexPath.row].name;
+    NSString *name = [_bleManager.peripheralList objectAtIndex:indexPath.row].name;
     if (name == nil)
       name = @"nil";
     
-    _selectedDevice.text=[@"Characteristics device: "stringByAppendingString:name];
-    _trackerPeripheral = [peripheralList objectAtIndex:indexPath.row];
-    _trackerPeripheral.delegate = self;
+    [_bleManager setNewPeripheral:indexPath.row];
     
-    NSLog(@"Connecting to peripheral %@", _trackerPeripheral.name);
-    _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Connecting to peripheral..."];
-    
-    [_centralManager connectPeripheral:_trackerPeripheral options:nil];
+    _selectedDevice.text = [@"Characteristics device: "stringByAppendingString:name];
+    _connectStatusLabel.text = [@"Connect status: "stringByAppendingString:@"Connecting to peripheral..."];
   }
-}
-
-
-#pragma mark -
-#pragma mark Bluetooth Low Energy
-
-
-// Update status of central manager (current device)
-- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
-  
-  switch (central.state) {
-    case CBManagerStateUnknown:
-    case CBManagerStateResetting:
-    case CBManagerStateUnsupported:
-    case CBManagerStateUnauthorized:
-    case CBManagerStatePoweredOff:
-      _statusOfScanning.text = @"Search status: BLE Off";
-      NSLog(@"Error... Check Bluetooth connection.");
-      break;
-      
-    case CBManagerStatePoweredOn:
-      NSLog(@"Bluetooth is active!");
-      break;
-  }
-}
-
-
-// Connect to selected peripheral device
-- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
-  _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Connected!"];
-  
-  NSLog(@"Connected!");
-  [_trackerPeripheral discoverServices:@[[CBUUID UUIDWithString:PeripheryInfo.pService]]];
-  _serviceUUID.text = PeripheryInfo.pService;
-}
-
-
-// Find peripheral devices and update table
-- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
-  
-  if (RSSI.intValue < -30) {
-    // return;
-    // Uncomment above to ignore device with less signal strength
-  }
-  
-  NSString *name = peripheral.name;
-  if (name == nil)
-    name = @"nil";
-  
-  if ([name  isEqual: PeripheryInfo.deviceName]) {
-    // Uncomment this "return" to get the whole list of devices
-    return;
-    
-    [self stopScanning];
-    _trackerPeripheral = peripheral;
-    _trackerPeripheral.delegate = self;
-    [_centralManager connectPeripheral:_trackerPeripheral options:nil];
-  }
-  
-  if (![peripheralList containsObject:peripheral])
-    [peripheralList addObject:peripheral];
-  
-  [_deviceTable reloadData];
-}
-
-
-// Discover characteristics for services
-- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error {
-  
-  for (CBService *service in _trackerPeripheral.services) {
-    NSLog(@"Service: %@", service);
-    [peripheral discoverCharacteristics:nil forService:service];
-  }
-}
-
-
-// Characteristics for services
-- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
-  
-  if (error) {
-    NSLog(@"Error");
-    return;
-  }
-  
-  for (CBCharacteristic *characteristic in service.characteristics) {
-    
-    if (![characteristicslList containsObject:characteristic]) {
-      [characteristicslList addObject:characteristic];
-    }
-    
-    if (characteristic.properties & CBCharacteristicPropertyRead)
-      [peripheral readValueForCharacteristic:characteristic];
-    
-    if (characteristic.properties & CBCharacteristicPropertyNotify)
-      [peripheral setNotifyValue:true forCharacteristic:characteristic];
-  }
-  
-  [_charTable reloadData];
-}
-
-
-// Getting service characteristics (read)
-- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
-  
-  if (error) {
-    NSLog(@"Error");
-    return;
-  }
-  
-  NSString *stringFromData = [[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding];
-  NSLog(@"Read data: %@", stringFromData);
-  
-  int count = 0;
-  if (charValuelList.count == characteristicslList.count) {
-    for (CBCharacteristic *charact in characteristicslList) {
-      if ([charact isEqual:characteristic])
-        [charValuelList replaceObjectAtIndex:count withObject:stringFromData];
-      
-      count++;
-    }
-  } else {
-    [charValuelList addObject:stringFromData];
-  }
-  
-  [_charTable reloadData];
-}
-
-
-// Connect is fail
-- (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
-  
-  isSend = false;
-  _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Failed"];
-  NSLog(@"Failed to connect");
-}
-
-
-// Disconnected
-- (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
-  
-  isSend = false;
-  NSLog(@"Disconnect from %@", peripheral.identifier.UUIDString);
-  
-  _connectStatusLabel.text=[@"Connect status: "stringByAppendingString:@"Disconnect"];
-  [_centralManager connectPeripheral:_trackerPeripheral options:nil];
 }
 
 
@@ -301,89 +142,55 @@ NSMutableArray *charValuelList;
 // Scan button action (start scanning)
 - (IBAction)scanBluetoothDevices:(id)sender {
   
-  if (_centralManager.isScanning) {
-    NSLog(@"Central Manager is already scanning!!");
-    return;
-  }
+  if (sender == _scanOnceButton)
+    [_bleManager startScanning:1 with:isAllDevices];
+  else
+    [_bleManager startScanning:0 with:isAllDevices];
   
-  if (!isScan) {
-    
-    // Clear current data before new scanning
-    [self clearData];
-    
-    isScan = true;
-    _statusOfScanning.text = @"Search status: scan...";
-    _scanOnceButton.enabled = false;
-    _scanAlwaysButton.enabled = false;
-
-    NSLog(@"Start scanning...");
-    [_centralManager scanForPeripheralsWithServices:nil options:nil];
-    
-    // End the scan after 5 seconds
-    if (sender == _scanOnceButton) {
-      [NSTimer scheduledTimerWithTimeInterval:3.0
-                                     target:self
-                                   selector:@selector(stopScanning)
-                                   userInfo:nil
-                                    repeats:NO];
-    }
-  }
+  
+  _statusOfScanning.text = @"Search status: scan...";
+  _scanOnceButton.enabled = false;
+  _scanAlwaysButton.enabled = false;
 }
 
 
 // Reading data for selected characteristics
 - (IBAction)readData:(id)sender {
-  
-  if (characteristicslList.count == 0)
-    return;
-  
-  NSIndexPath *ip = [_charTable indexPathForSelectedRow];
-  CBCharacteristic *ch = [characteristicslList objectAtIndex:ip.row];
-  [_trackerPeripheral readValueForCharacteristic:ch];
+  [_bleManager readData:[_charTable indexPathForSelectedRow].row];
 }
 
 
 // Writing data for selected characteristics
 - (IBAction)writeData:(id)sender {
   
-  if (characteristicslList.count == 0)
-    return;
-  
   NSString *str = [self randomStringWithLength:7];
-  
   _genStringLabel.text = str;
-  [_trackerPeripheral writeValue:[str dataUsingEncoding:NSASCIIStringEncoding]
-               forCharacteristic:[characteristicslList
-                                  objectAtIndex:[_charTable indexPathForSelectedRow].row]
-                            type:CBCharacteristicWriteWithoutResponse];
-}
-
-
-// Stop always scan
-- (IBAction)stopScan:(id)sender {
-  [self stopScanning];
+  [_bleManager writeData:[_charTable indexPathForSelectedRow].row with:str];
 }
 
 
 // Change UDP Switch
 - (IBAction)updControlChange:(id)sender {
-  if (_udpSwitch.isOn && _centralManager.state == CBManagerStatePoweredOn) {
+  if (_udpSwitch.isOn && [_bleManager.managerState isEqualToString:@"On"]) {
     (isSend = true);
   } else {
     isSend = false;
   }
-
+  
   [_udpSocket sendMsg:@"test"];
+}
+
+
+// Stop always scan
+- (IBAction)stopScan:(id)sender {
+  [_bleManager stopScanning];
 }
 
 
 // Break the connection
 - (IBAction)doDisconnect:(id)sender {
-  
-  if (_trackerPeripheral != nil) {
-    [_centralManager cancelPeripheralConnection:_trackerPeripheral];
-    [self clearData];
-  }
+  [_bleManager doDisconnect];
+  isSend = false;
 }
 
 
@@ -401,42 +208,36 @@ NSMutableArray *charValuelList;
   
   [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
     NSString *uuidString = alertController.textFields[0].text;
-    NSLog(@"%@", uuidString);
     
-    _serviceUUID.text = uuidString;
-    PeripheryInfo.pService = uuidString;
-
-    NSLog(@"%@", PeripheryInfo.pService);
+    if (![uuidString isEqualToString:@""] && uuidString.length == 36) {
+      _serviceUUID.text = uuidString;
+      PeripheryInfo.pFirstService = uuidString;
+      PeripheryInfo.pSecondService = @" ";
+      
+      NSLog(@"%@", PeripheryInfo.pFirstService);
+    } else {
+      NSLog(@"Invalid UUID");
+    }
   }]];
   
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
+- (IBAction)changeScanningMode:(id)sender {
+  
+  if (!isAllDevices) {
+    isAllDevices = true;
+    _scanAllDevices.text = @"Yes";
+    _scanAllDevices.textColor = [UIColor colorWithRed:0.0 green:122/255.0 blue:1.0 alpha:1.0];
+  } else {
+    isAllDevices = false;
+    _scanAllDevices.text = @"No";
+    _scanAllDevices.textColor = [UIColor colorWithRed:241/255.0 green:9/255.0 blue:50/255.0 alpha:1.0];
+  }
+}
 
 #pragma mark -
 #pragma mark Helpers
-
-
-// Stop scanning
-- (void)stopScanning {
-  isScan = false;
-  _statusOfScanning.text = @"Search status: stop";
-  _scanOnceButton.enabled = true;
-  _scanAlwaysButton.enabled = true;
-  _stopScanButton.enabled = false;
-
-  NSLog(@"Stop");
-  [_centralManager stopScan];
-}
-
-
-// Clearing current data
-- (void) clearData {
-  [charValuelList removeAllObjects];
-  [characteristicslList removeAllObjects];
-  [_charTable reloadData];
-  [_deviceTable reloadData];
-}
 
 
 // Generate random string
@@ -452,9 +253,44 @@ NSMutableArray *charValuelList;
   return randomString;
 }
 
+
+#pragma mark -
+#pragma mark Delegate Methods
+
+
+// Change connect or scanning labels
+- (void)changeStatusLabel: (NSString *)statusText withType:(NSString *)type {
+  if ([type isEqualToString:@"Connect"])
+    _connectStatusLabel.text = statusText;
+  else if ([type isEqualToString:@"Scanning"])
+    _statusOfScanning.text = statusText;
+}
+
+
+// Reload table data
+- (void)reloadTable: (NSString *)table {
+  if ([table isEqualToString:@"Devices"])
+    [_deviceTable reloadData];
+  
+  if ([table isEqualToString:@"Characteristics"])
+    [_charTable reloadData];
+}
+
+
+// Change label with service UUID
+- (void)changeServiceUUIDLabel: (NSString *)uuidLabel {
+  _serviceUUID.text = uuidLabel;
+}
+
+
+// Stop scanning
+- (void)stopScan {
+  _statusOfScanning.text = @"Search status: stop";
+  _scanOnceButton.enabled = true;
+  _scanAlwaysButton.enabled = true;
+  _stopScanButton.enabled = false;
+}
+
 // **************************************** //
 
 @end
-
-
-

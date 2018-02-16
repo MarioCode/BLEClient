@@ -11,6 +11,7 @@
 #import "CharTableViewCell.h"
 #import "Periphery.h"
 #import "UDPManager.h"
+#import "BLEManager.h"
 
 @interface MainViewController : UIViewController
 

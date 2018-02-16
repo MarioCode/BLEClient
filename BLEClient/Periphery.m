@@ -9,7 +9,9 @@
 #import "Periphery.h"
 
 struct PeripheryInfoStruct PeripheryInfo = {
-  .pService = @"5c067605-176a-4e56-b36b-b401f51c57f3",
-  .pCharacteristics = @"88CAE6D3-4AA8-4601-97E0-0D21F17FCDDA",
+  .pFirstService = @"0000ffe1-0000-1000-8000-00805F8B34FB",
+  .pSecondService = @"0000ffe5-0000-1000-8000-00805F8B34FB",
+  
+  .pCharacteristic = @"0000ffe2-0000-1000-8000-00805F8B34FB",
   .deviceName = @"Galaxy J2 Prime"
 };

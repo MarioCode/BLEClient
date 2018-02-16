@@ -54,7 +54,7 @@
                                 </prototypes>
                             </tableView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Characteristics device: none" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pg1-za-74g">
-                                <rect key="frame" x="11" y="358" width="267" height="21"/>
+                                <rect key="frame" x="11" y="358" width="290" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="B3H-gY-Fot"/>
                                 </constraints>
@@ -72,7 +72,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="72" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="hsW-D0-40y">
-                                <rect key="frame" x="0.0" y="405" width="375" height="176"/>
+                                <rect key="frame" x="0.0" y="404" width="375" height="176"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="176" id="iVV-GI-kLp"/>
@@ -162,7 +162,9 @@
                                     <constraint firstAttribute="height" constant="21" id="bwL-DD-vn9"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                                <state key="normal" title="Onec"/>
+                                <state key="normal" title="Onec">
+                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
                                 <connections>
                                     <action selector="scanBluetoothDevices:" destination="BYZ-38-t0r" eventType="touchUpInside" id="QtJ-tw-0Hz"/>
                                 </connections>
@@ -207,7 +209,7 @@
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <state key="normal" title="Stop">
-                                    <color key="titleColor" red="0.94588753169999995" green="0.035863921360000002" blue="0.19536041139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleColor" red="0.94509803921568625" green="0.035863921360000002" blue="0.19536041139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
                                     <action selector="stopScan:" destination="BYZ-38-t0r" eventType="touchUpInside" id="asc-7h-m0x"/>
@@ -249,26 +251,42 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HvQ-oc-lST">
-                                <rect key="frame" x="11" y="382" width="87" height="17"/>
+                                <rect key="frame" x="9" y="382" width="101" height="17"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="17" id="5d0-fm-MwR"/>
                                 </constraints>
-                                <state key="normal" title="UUID Device"/>
+                                <state key="normal" title="UUID Service"/>
                                 <connections>
                                     <action selector="changeServiceUUID:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gXA-4Z-AbA"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="UUID Service" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dLp-ix-dP9">
-                                <rect key="frame" x="110" y="380" width="255" height="21"/>
+                                <rect key="frame" x="110" y="380" width="255" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OmQ-a5-lL3">
+                                <rect key="frame" x="300" y="60" width="30" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <state key="normal" title="All: "/>
+                                <connections>
+                                    <action selector="changeScanningMode:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Lp4-BT-30g"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="No" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bmJ-iJ-KWM">
+                                <rect key="frame" x="328" y="59" width="37" height="22"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <color key="textColor" red="0.94588753169999995" green="0.035863921360000002" blue="0.19536041139999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" red="0.82432198497809239" green="0.91269477880760752" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="njJ-Bx-P71" firstAttribute="leading" secondItem="zU0-aM-ehh" secondAttribute="leading" constant="77" id="294-wv-MnB"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Pg1-za-74g" secondAttribute="trailing" constant="97" id="2dU-vJ-Ejv"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Pg1-za-74g" secondAttribute="trailing" constant="74" id="2dU-vJ-Ejv"/>
                             <constraint firstItem="hsW-D0-40y" firstAttribute="top" secondItem="dLp-ix-dP9" secondAttribute="bottom" constant="4" id="3Cf-Qb-Eae"/>
                             <constraint firstItem="hsW-D0-40y" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="5AF-dk-Co6"/>
                             <constraint firstItem="YCY-pZ-QL6" firstAttribute="top" secondItem="Efw-NS-8m7" secondAttribute="bottom" constant="2" id="5Lf-fH-Tnm"/>
@@ -280,7 +298,7 @@
                             <constraint firstItem="dLp-ix-dP9" firstAttribute="top" secondItem="Pg1-za-74g" secondAttribute="bottom" constant="1" id="Fm5-7Q-vSn"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="YCY-pZ-QL6" secondAttribute="trailing" constant="163" id="GTa-J3-Uve"/>
                             <constraint firstItem="Efw-NS-8m7" firstAttribute="leading" secondItem="YCY-pZ-QL6" secondAttribute="leading" id="GcB-Tm-9QS"/>
-                            <constraint firstItem="dLp-ix-dP9" firstAttribute="leading" secondItem="HvQ-oc-lST" secondAttribute="trailing" constant="12" id="HfH-Me-j9B"/>
+                            <constraint firstItem="dLp-ix-dP9" firstAttribute="leading" secondItem="HvQ-oc-lST" secondAttribute="trailing" id="HfH-Me-j9B"/>
                             <constraint firstItem="hsW-D0-40y" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="Hnd-7Q-Mcz"/>
                             <constraint firstItem="xWj-mx-GWn" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Jf8-rz-AuB"/>
                             <constraint firstItem="njJ-Bx-P71" firstAttribute="trailing" secondItem="djy-Kx-I9B" secondAttribute="trailing" constant="199" id="Kd4-Cs-Nnc"/>
@@ -300,7 +318,7 @@
                             <constraint firstItem="zU0-aM-ehh" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="cFc-yA-3zb"/>
                             <constraint firstItem="djy-Kx-I9B" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="40" id="cU1-2Z-gSB"/>
                             <constraint firstItem="djy-Kx-I9B" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mGC-Jl-G0d" secondAttribute="trailing" constant="-225" id="cUv-zI-cz8"/>
-                            <constraint firstItem="HvQ-oc-lST" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="11" id="eEH-vN-5Ab"/>
+                            <constraint firstItem="HvQ-oc-lST" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="9" id="eEH-vN-5Ab"/>
                             <constraint firstItem="N29-RZ-dqZ" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="340" id="elF-zI-TT5"/>
                             <constraint firstItem="S61-pX-kuO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="20" symbolic="YES" id="fCm-uf-ijS"/>
                             <constraint firstItem="njJ-Bx-P71" firstAttribute="top" secondItem="oeY-Jn-jbe" secondAttribute="bottom" constant="1" id="gDH-HA-QuM"/>
@@ -333,6 +351,7 @@
                         <outlet property="connectStatusLabel" destination="njJ-Bx-P71" id="K2X-XL-DM9"/>
                         <outlet property="deviceTable" destination="xWj-mx-GWn" id="jQk-56-45b"/>
                         <outlet property="genStringLabel" destination="rfl-VP-OP3" id="nhd-C9-38h"/>
+                        <outlet property="scanAllDevices" destination="bmJ-iJ-KWM" id="gbg-7a-42f"/>
                         <outlet property="scanAlwaysButton" destination="djy-Kx-I9B" id="n9p-NL-12Y"/>
                         <outlet property="scanOnceButton" destination="zU0-aM-ehh" id="K0z-Rl-pn7"/>
                         <outlet property="selectedDevice" destination="Pg1-za-74g" id="vhZ-eo-FeJ"/>
@@ -345,7 +364,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="475.5" y="133.5"/>
+            <point key="canvasLocation" x="474.39999999999998" y="132.68365817091455"/>
         </scene>
     </scenes>
 </document>

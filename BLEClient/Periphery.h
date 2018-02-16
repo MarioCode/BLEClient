@@ -10,8 +10,9 @@
 
 extern struct PeripheryInfoStruct
 {
-  __unsafe_unretained NSString * pService;
-  __unsafe_unretained NSString * pCharacteristics;
+  __unsafe_unretained NSString * pFirstService;
+  __unsafe_unretained NSString * pSecondService;
+  __unsafe_unretained NSString * pCharacteristic;
   __unsafe_unretained NSString * const deviceName;
 } PeripheryInfo;
 
