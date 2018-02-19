@@ -7,14 +7,23 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreBluetooth/CoreBluetooth.h>
 
-extern struct PeripheryInfoStruct
+@interface PeripheryInfo : NSObject
 {
-  __unsafe_unretained NSString * pFirstService;
-  __unsafe_unretained NSString * pSecondService;
-  __unsafe_unretained NSString * pCharacteristic;
-  __unsafe_unretained NSString * const deviceName;
-} PeripheryInfo;
+  NSMutableArray <CBUUID *> *_services;
+  NSMutableArray <CBUUID *> *_characteristics;
+  NSString *_deviceName;
+}
+
++ (PeripheryInfo *)sharedInstance;
+
+@property(strong, nonatomic, readwrite) NSMutableArray <CBUUID *> *services;
+@property(strong, nonatomic, readwrite) NSMutableArray <CBUUID *> *characteristics;
+@property(strong, nonatomic, readwrite) NSString *deviceName;
+
+@end
+
 
 
 

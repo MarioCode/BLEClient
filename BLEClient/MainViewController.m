@@ -40,7 +40,7 @@ BOOL isAllDevices = false;
   [super viewDidLoad];
   
   _udpSocket = [[UDPManager alloc] init];
-  _bleManager = [[BLEManager alloc] init];
+  _bleManager = [BLEManager sharedInstance];
   
   _deviceTable.dataSource = self;
   _charTable.dataSource = self;
@@ -211,10 +211,8 @@ BOOL isAllDevices = false;
     
     if (![uuidString isEqualToString:@""] && uuidString.length == 36) {
       _serviceUUID.text = uuidString;
-      PeripheryInfo.pFirstService = uuidString;
-      PeripheryInfo.pSecondService = @" ";
-      
-      NSLog(@"%@", PeripheryInfo.pFirstService);
+      [_bleManager setServiceUUID:uuidString];
+      NSLog(@"Set one UUID: %@", uuidString);
     } else {
       NSLog(@"Invalid UUID");
     }

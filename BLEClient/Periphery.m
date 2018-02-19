@@ -8,10 +8,38 @@
 
 #import "Periphery.h"
 
-struct PeripheryInfoStruct PeripheryInfo = {
-  .pFirstService = @"0000ffe1-0000-1000-8000-00805F8B34FB",
-  .pSecondService = @"0000ffe5-0000-1000-8000-00805F8B34FB",
+@implementation PeripheryInfo
+
+@synthesize services = _services;
+@synthesize characteristics = _characteristics;
+@synthesize deviceName = _deviceName;
+
+
++ (PeripheryInfo *)sharedInstance {
+  static dispatch_once_t onceToken;
+  static PeripheryInfo *instance = nil;
+  dispatch_once(&onceToken, ^{
+    instance = [[PeripheryInfo alloc] init];
+  });
+  return instance;
+}
+
+
+- (id)init {
+  self = [super init];
+  if (self) {
+    _services = [[NSMutableArray <CBUUID *> alloc] init];
+    [_services addObject:[CBUUID UUIDWithString:@"0000ffe1-0000-1000-8000-00805F8B34FB"]];
+    [_services addObject:[CBUUID UUIDWithString:@"0000ffe5-0000-1000-8000-00805F8B34FB"]];
+
+    _characteristics = [[NSMutableArray <CBUUID *> alloc] init];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ffe2-0000-1000-8000-00805F8B34FB"]];
+
+    _deviceName = @"G5 SE";
+  }
   
-  .pCharacteristic = @"0000ffe2-0000-1000-8000-00805F8B34FB",
-  .deviceName = @"Galaxy J2 Prime"
-};
+  return self;
+}
+
+@end
+

@@ -17,15 +17,24 @@
 
 @implementation BLEManager
 
-BOOL isScan = false;
 
 - (id)init {
   self = [super init];
-  
-  [self initBLEManager];
+   if (self)
+     [self initBLEManager];
   
   return self;
 }
+
++ (BLEManager *)sharedInstance {
+  static dispatch_once_t onceToken;
+  static BLEManager *singleton = nil;
+  dispatch_once(&onceToken, ^{
+    singleton = [[BLEManager alloc] init];
+  });
+  return singleton;
+}
+
 
 - (void)initBLEManager {
   
@@ -33,6 +42,7 @@ BOOL isScan = false;
   _peripheralList = [[NSMutableArray alloc] init];
   _characteristicslList = [[NSMutableArray alloc] init];
   _charValuelList = [[NSMutableArray alloc] init];
+  _peripheryInfo = [PeripheryInfo sharedInstance];
 }
 
 
@@ -65,18 +75,15 @@ BOOL isScan = false;
 // Connect to selected peripheral device
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
   [self.delegate changeStatusLabel:@"Connect status: Connected!" withType:@"Connect"];
-  
   [self clearData];
   
   NSLog(@"Connected!");
-  
-  if ([PeripheryInfo.pSecondService isEqualToString:@" "]) {
-    [self.delegate changeServiceUUIDLabel:PeripheryInfo.pFirstService];
-    [_trackerPeripheral discoverServices:@[[CBUUID UUIDWithString:PeripheryInfo.pFirstService]]];
-  }  else {
+  [_trackerPeripheral discoverServices:_peripheryInfo.services];
+
+  if (_peripheryInfo.services.count > 1)
     [self.delegate changeServiceUUIDLabel:@"More than one"];
-    [_trackerPeripheral discoverServices:@[[CBUUID UUIDWithString:PeripheryInfo.pFirstService], [CBUUID UUIDWithString:PeripheryInfo.pSecondService]]];
-  }
+   else
+    [self.delegate changeServiceUUIDLabel:[[_peripheryInfo.services objectAtIndex:0] UUIDString]];
 }
 
 // - didDiscoverPeripheral
@@ -90,7 +97,7 @@ BOOL isScan = false;
   
   NSString *name = peripheral.name ? peripheral.name : @"nil";
   
-  if ([name  isEqual: PeripheryInfo.deviceName]) {
+  if ([name isEqual: _peripheryInfo.deviceName]) {
     // Uncomment this "return" to get the whole list of devices
     //return;
     
@@ -181,8 +188,9 @@ BOOL isScan = false;
   NSLog(@"Disconnect from %@", peripheral.identifier.UUIDString);
 
   [self.delegate changeStatusLabel:@"Connect status: Disconnect" withType:@"Connect"];
+  [self startScanning:1 with:true];
   
-  [_centralManager connectPeripheral:_trackerPeripheral options:nil];
+  //[_centralManager connectPeripheral:_trackerPeripheral options:nil];
 }
 
 
@@ -197,12 +205,12 @@ BOOL isScan = false;
     return;
   }
   
-  if (!isScan) {
+  if (!_isScanning) {
     
     // Clear current data before new scanning
     [self clearData];
     
-    isScan = true;
+    _isScanning = true;
     
     NSLog(@"Start scanning...");
     
@@ -210,7 +218,7 @@ BOOL isScan = false;
     if (allScan) {
       [_centralManager scanForPeripheralsWithServices:nil options:nil];
     } else {
-      [_centralManager scanForPeripheralsWithServices:@[[CBUUID UUIDWithString:PeripheryInfo.pFirstService], [CBUUID UUIDWithString:PeripheryInfo.pSecondService]] options:nil];
+      [_centralManager scanForPeripheralsWithServices:_peripheryInfo.services options:nil];
     }
     
     // End the scan after 5 seconds
@@ -259,6 +267,13 @@ BOOL isScan = false;
 }
 
 
+// After manual input, install ONLY ONE UUID
+- (void)setServiceUUID: (NSString *)uuid {
+  [_peripheryInfo.services removeAllObjects];
+  [_peripheryInfo.services addObject:[CBUUID UUIDWithString:uuid]];
+}
+
+
 // Get CBManager state
 - (NSString *)managerState {
   if (_centralManager.state == CBManagerStatePoweredOn)
@@ -273,7 +288,7 @@ BOOL isScan = false;
   if (_trackerPeripheral != nil) {
     [_centralManager cancelPeripheralConnection:_trackerPeripheral];
     [self clearData];
-    isScan = false;
+    _isScanning = false;
   }
 }
 
@@ -281,7 +296,7 @@ BOOL isScan = false;
 // Stop scanning
 - (void)stopScanning {
   NSLog(@"Stop");
-  isScan = false;
+  _isScanning = false;
   [self.delegate stopScan];
   [_centralManager stopScan];
 }
