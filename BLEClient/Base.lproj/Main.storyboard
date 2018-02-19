@@ -213,6 +213,7 @@
                                 </state>
                                 <connections>
                                     <action selector="stopScan:" destination="BYZ-38-t0r" eventType="touchUpInside" id="asc-7h-m0x"/>
+                                    <action selector="stopScanAction:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vt5-Op-e8x"/>
                                 </connections>
                             </button>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="GDu-wC-ff1">

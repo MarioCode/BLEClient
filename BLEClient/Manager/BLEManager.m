@@ -71,20 +71,6 @@
   }
 }
 
-// - didConnectPeripheral
-// Connect to selected peripheral device
-- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
-  [self.delegate changeStatusLabel:@"Connect status: Connected!" withType:@"Connect"];
-  [self clearData];
-  
-  NSLog(@"Connected!");
-  [_trackerPeripheral discoverServices:_peripheryInfo.services];
-
-  if (_peripheryInfo.services.count > 1)
-    [self.delegate changeServiceUUIDLabel:@"More than one"];
-   else
-    [self.delegate changeServiceUUIDLabel:[[_peripheryInfo.services objectAtIndex:0] UUIDString]];
-}
 
 // - didDiscoverPeripheral
 // Find peripheral devices and update table
@@ -112,13 +98,29 @@
   [self.delegate reloadTable:@"Devices"];
 }
 
+// - didConnectPeripheral
+// Connect to selected peripheral device
+- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
+  [self.delegate changeStatusLabel:@"Connect status: Connected!" withType:@"Connect"];
+  [self clearData];
+  
+  NSLog(@"Connected!");
+  [_trackerPeripheral discoverServices:_peripheryInfo.services];
+  
+  if (_peripheryInfo.services.count > 1)
+    [self.delegate changeServiceUUIDLabel:@"More than one"];
+  else
+    [self.delegate changeServiceUUIDLabel:[[_peripheryInfo.services objectAtIndex:0] UUIDString]];
+}
+
+
 // - didDiscoverServices
 // Discover characteristics for services
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error {
   
   for (CBService *service in _trackerPeripheral.services) {
     NSLog(@"Service: %@", service);
-    [peripheral discoverCharacteristics:nil forService:service];
+    [peripheral discoverCharacteristics:_peripheryInfo.characteristics forService:service];
   }
 }
 
@@ -188,9 +190,9 @@
   NSLog(@"Disconnect from %@", peripheral.identifier.UUIDString);
 
   [self.delegate changeStatusLabel:@"Connect status: Disconnect" withType:@"Connect"];
-  [self startScanning:1 with:true];
+  //[self startScanning:1 with:true];
   
-  //[_centralManager connectPeripheral:_trackerPeripheral options:nil];
+  [_centralManager connectPeripheral:_trackerPeripheral options:nil];
 }
 
 

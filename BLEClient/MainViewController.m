@@ -182,7 +182,7 @@ BOOL isAllDevices = false;
 
 
 // Stop always scan
-- (IBAction)stopScan:(id)sender {
+- (IBAction)stopScanAction:(id)sender {
   [_bleManager stopScanning];
 }
 
