@@ -29,12 +29,15 @@
   self = [super init];
   if (self) {
     _services = [[NSMutableArray <CBUUID *> alloc] init];
-    [_services addObject:[CBUUID UUIDWithString:@"0000ffe1-0000-1000-8000-00805F8B34FB"]];
-    [_services addObject:[CBUUID UUIDWithString:@"0000ffe5-0000-1000-8000-00805F8B34FB"]];
+    [_services addObject:[CBUUID UUIDWithString:@"0000ffa1-0000-1000-8000-00805F8B34FB"]];
+    [_services addObject:[CBUUID UUIDWithString:@"0000ffa2-0000-1000-8000-00805F8B34FB"]];
+    [_services addObject:[CBUUID UUIDWithString:@"0000ffb1-0000-1000-8000-00805F8B34FB"]];
 
     _characteristics = [[NSMutableArray <CBUUID *> alloc] init];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ffe2-0000-1000-8000-00805F8B34FB"]];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ffe6-0000-1000-8000-00805F8B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff11-0000-1000-8000-00805F8B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff12-0000-1000-8000-00805F8B34FB"]];
+    
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff21-0000-1000-8000-00805F8B34FB"]];
 
     _deviceName = @"G5 SE";
   }

@@ -7,6 +7,8 @@
 //
 
 #import "MainViewController.h"
+#import "BLECentralManager.h"
+#import "AMPeripheral.h"
 
 @interface MainViewController () <UITableViewDataSource, UITableViewDelegate, BLEManagerDelegate>
 
@@ -15,18 +17,17 @@
 @property (weak, nonatomic) IBOutlet UIButton *scanAlwaysButton;
 @property (weak, nonatomic) IBOutlet UIButton *scanOnceButton;
 @property (weak, nonatomic) IBOutlet UIButton *writeButton;
-@property (weak, nonatomic) IBOutlet UIButton *stopScanButton;
 @property (weak, nonatomic) IBOutlet UIButton *changeServiceUUID;
 @property (weak, nonatomic) IBOutlet UILabel *genStringLabel;
 @property (weak, nonatomic) IBOutlet UILabel *connectStatusLabel;
 @property (weak, nonatomic) IBOutlet UILabel *statusOfScanning;
-@property (weak, nonatomic) IBOutlet UILabel *selectedDevice;
 @property (weak, nonatomic) IBOutlet UILabel *serviceUUID;
 @property (weak, nonatomic) IBOutlet UILabel *scanAllDevices;
 @property (weak, nonatomic) IBOutlet UISwitch *udpSwitch;
 
 @property (strong, nonatomic) UDPManager *udpSocket;
 @property (strong, nonatomic) BLEManager *bleManager;
+@property (nonatomic) BLECentralManager *centralManager;
 
 @end
 
@@ -39,6 +40,9 @@ BOOL isAllDevices = false;
 - (void)viewDidLoad {
   [super viewDidLoad];
   
+  _centralManager = [BLECentralManager new];
+  [_centralManager scanForPeripherals];
+
   _udpSocket = [[UDPManager alloc] init];
   _bleManager = [BLEManager sharedInstance];
   
@@ -48,6 +52,12 @@ BOOL isAllDevices = false;
   _deviceTable.delegate = self;
   _charTable.delegate = self;
   _bleManager.delegate = self;
+  
+  [NSTimer scheduledTimerWithTimeInterval:3.0
+                                   target:self
+                                 selector:@selector(stop)
+                                 userInfo:nil
+                                  repeats:NO];
 }
 
 
@@ -93,8 +103,10 @@ BOOL isAllDevices = false;
     
     charCell.uuidLabel.text =[@"UUID: "stringByAppendingString:charService.UUID.UUIDString];
     
-    if (_bleManager.charValuelList.count != 0 && indexPath.row < _bleManager.charValuelList.count)
-      charCell.valueLabel.text =[@"Value: "stringByAppendingString: [_bleManager.charValuelList objectAtIndex:indexPath.row]];
+    NSString *stringFromData = [[NSString alloc] initWithData:[_bleManager.characteristicslList objectAtIndex:indexPath.row].value encoding:NSUTF8StringEncoding];
+    
+    if (_bleManager.characteristicslList.count != 0 && indexPath.row < _bleManager.characteristicslList.count)
+      charCell.valueLabel.text =[@"Value: "stringByAppendingString: stringFromData];
     else
       charCell.valueLabel.text = @"Value: none";
     
@@ -109,29 +121,12 @@ BOOL isAllDevices = false;
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
   
   if (tableView == _deviceTable)
-    return _bleManager.peripheralList.count;
+    return [_centralManager.peripherals count];
+
   if (tableView == _charTable)
     return _bleManager.characteristicslList.count;
   
   return 0;
-}
-
-
-// Select table cell
--(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-  if (tableView == _deviceTable) {
-    [_bleManager clearData];
-    
-    NSString *name = [_bleManager.peripheralList objectAtIndex:indexPath.row].name;
-    if (name == nil)
-      name = @"nil";
-    
-    [_bleManager setNewPeripheral:indexPath.row];
-    
-    _selectedDevice.text = [@"Characteristics device: "stringByAppendingString:name];
-    _connectStatusLabel.text = [@"Connect status: "stringByAppendingString:@"Connecting to peripheral..."];
-  }
 }
 
 
@@ -153,10 +148,13 @@ BOOL isAllDevices = false;
   _scanAlwaysButton.enabled = false;
 }
 
+- (void)stop {
+  [_centralManager stopScanForPeripherals];
+}
 
 // Reading data for selected characteristics
 - (IBAction)readData:(id)sender {
-  [_bleManager readData:[_charTable indexPathForSelectedRow].row];
+  [_bleManager readData:[_charTable indexPathForSelectedRow].row withCharIndex:[_charTable indexPathForSelectedRow].row];
 }
 
 
@@ -165,7 +163,12 @@ BOOL isAllDevices = false;
   
   NSString *str = [self randomStringWithLength:7];
   _genStringLabel.text = str;
-  [_bleManager writeData:[_charTable indexPathForSelectedRow].row with:str];
+  [_bleManager writeData:[_charTable indexPathForSelectedRow].row withCharIndex:[_charTable indexPathForSelectedRow].row withText:str];
+  
+  
+  [_udpSocket updateConnect:arc4random_uniform(100)+60000];
+  [_udpSocket didSendData];
+  
 }
 
 
@@ -177,48 +180,7 @@ BOOL isAllDevices = false;
     isSend = false;
   }
   
-  [_udpSocket sendMsg:@"test"];
-}
-
-
-// Stop always scan
-- (IBAction)stopScanAction:(id)sender {
-  [_bleManager stopScanning];
-}
-
-
-// Break the connection
-- (IBAction)doDisconnect:(id)sender {
-  [_bleManager doDisconnect];
-  isSend = false;
-}
-
-
-// Change UUID Service
-- (IBAction)changeServiceUUID:(id)sender {
-  UIAlertController * alertController = [UIAlertController alertControllerWithTitle: @"UUID"
-                                                                            message: @"Set new Service UUID for select device"
-                                                                     preferredStyle:UIAlertControllerStyleAlert];
-  [alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-    textField.placeholder = @"UUID";
-    textField.textColor = [UIColor blueColor];
-    textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    textField.borderStyle = UITextBorderStyleRoundedRect;
-  }];
-  
-  [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-    NSString *uuidString = alertController.textFields[0].text;
-    
-    if (![uuidString isEqualToString:@""] && uuidString.length == 36) {
-      _serviceUUID.text = uuidString;
-      [_bleManager setServiceUUID:uuidString];
-      NSLog(@"Set one UUID: %@", uuidString);
-    } else {
-      NSLog(@"Invalid UUID");
-    }
-  }]];
-  
-  [self presentViewController:alertController animated:YES completion:nil];
+  [_udpSocket didSendData];
 }
 
 - (IBAction)changeScanningMode:(id)sender {
@@ -286,7 +248,6 @@ BOOL isAllDevices = false;
   _statusOfScanning.text = @"Search status: stop";
   _scanOnceButton.enabled = true;
   _scanAlwaysButton.enabled = true;
-  _stopScanButton.enabled = false;
 }
 
 // **************************************** //

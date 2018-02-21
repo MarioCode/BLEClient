@@ -11,6 +11,6 @@
 
 @interface UDPManager : NSObject
 
-- (void)sendMsg:(NSString *) textMsg;
-
+- (void)didSendData;
+- (void)updateConnect:(NSInteger) port;
 @end
