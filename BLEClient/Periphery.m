@@ -36,8 +36,12 @@
     _characteristics = [[NSMutableArray <CBUUID *> alloc] init];
     [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff11-0000-1000-8000-00805F8B34FB"]];
     [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff12-0000-1000-8000-00805F8B34FB"]];
-    
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff13-0000-1000-8000-00805F8B34FB"]];
+
     [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff21-0000-1000-8000-00805F8B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff22-0000-1000-8000-00805F8B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff23-0000-1000-8000-00805F8B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff24-0000-1000-8000-00805F8B34FB"]];
 
     _deviceName = @"G5 SE";
   }

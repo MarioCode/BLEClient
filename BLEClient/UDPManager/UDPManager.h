@@ -8,9 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import "GCDAsyncUdpSocket.h"
+#import "BridgeDelegate.h"
+#import "AMPeripheral.h"
 
-@interface UDPManager : NSObject
+@interface UDPManager : NSObject < BleToUdpBridgeDelegate >
 
-- (void)didSendData;
-- (void)updateConnect:(NSInteger) port;
++ (UDPManager *)shareUDPSocket;
+
+- (void)didSendDataWithValue:(NSData *) data;
+- (void)updateConnectToPort:(NSInteger) port;
 @end

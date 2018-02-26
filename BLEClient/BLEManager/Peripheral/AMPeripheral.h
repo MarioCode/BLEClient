@@ -10,24 +10,26 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Periphery.h"
 #import "AMService.h"
+#import "BridgeDelegate.h"
 
 @interface AMPeripheral : NSObject <CBPeripheralDelegate>
 
 @property (nonatomic, readonly) CBPeripheral *CBPeripheral;
 @property (nonatomic, readonly) NSMutableDictionary *services;
-@property (nonatomic, strong) PeripheryInfo *peripheryInfo;
+@property (nonatomic, readonly) NSInteger udpPort;
+@property (nonatomic, weak) id <BleToUdpBridgeDelegate> delegate;
 
 + (instancetype)peripheralWithCBPeripheral:(CBPeripheral *)cbPeripheral;
 - (instancetype)initWithCBPeripheral:(CBPeripheral *)cbPeripheral;
 
 - (void)sendRequestData:(NSData *)requestData;
 - (BOOL)isConnected;
+- (void)getServiceInfo;
 
 // Handling CBCentralManager callbacks.
 - (void)didConnect;
 - (void)discoverServices;
 - (void)didFailToConnectWithError:(NSError *)error;
 - (void)didDisconnectWithError:(NSError *)error;
-- (void)observePeripheralAllInfo;
 
 @end

@@ -41,12 +41,9 @@
   self = [super init];
   
   if (self != nil) {
-    _peripheryInfo = [PeripheryInfo sharedInstance];
     dispatch_queue_t queue = dispatch_queue_create("CentralManagerQueue", DISPATCH_QUEUE_SERIAL);
-    NSDictionary *options = @{CBCentralManagerOptionShowPowerAlertKey: @YES,
-                              CBCentralManagerOptionRestoreIdentifierKey: @""};
-    
-    _CBCentralManager = [[CBCentralManager alloc] initWithDelegate:self queue:queue options:options];
+
+    _CBCentralManager = [[CBCentralManager alloc] initWithDelegate:self queue:queue options:nil];
     _peripherals = [NSMutableDictionary dictionary];
   }
   
@@ -60,24 +57,17 @@
 
 - (void)scanForPeripherals {
   
+  // TODO: Replace nil
+  NSLog(@"Info: Start scanning");
   if (self.CBCentralManager.state == CBManagerStatePoweredOn) {
-    
-    dispatch_sync(dispatch_get_main_queue(), ^(void) { [self willChangeValueForKey:@"peripherals"]; });
     [self.peripherals removeAllObjects];
-    dispatch_sync(dispatch_get_main_queue(), ^(void) { [self didChangeValueForKey:@"peripherals"]; });
-    
-    NSDictionary *options = @{CBCentralManagerScanOptionAllowDuplicatesKey: @YES,
-                              CBCentralManagerScanOptionSolicitedServiceUUIDsKey: @[]};
-    
-    // TODO: Replace nil
-    [self.CBCentralManager scanForPeripheralsWithServices:nil options:options];
-    
+    [self.CBCentralManager scanForPeripheralsWithServices:nil options:nil];
   }
 }
 
 - (void)stopScanForPeripherals {
   
-  NSLog(@"Stop scanning");
+  NSLog(@"Info: Stop scanning");
   if (self.CBCentralManager.isScanning) {
     [self.CBCentralManager stopScan];
   }
@@ -87,13 +77,8 @@
   
   CBPeripheral *cbPeripheral = peripheral.CBPeripheral;
   
-  if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateDisconnected)) {
-    NSDictionary *options = @{CBConnectPeripheralOptionNotifyOnConnectionKey: @YES,
-                              CBConnectPeripheralOptionNotifyOnDisconnectionKey: @YES,
-                              CBConnectPeripheralOptionNotifyOnNotificationKey: @YES};
-    
-    [self.CBCentralManager connectPeripheral:cbPeripheral options:options];
-  }
+  if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateDisconnected))
+    [self.CBCentralManager connectPeripheral:cbPeripheral options:nil];
 }
 
 - (void)disconnectPeripheral:(AMPeripheral *)peripheral {
@@ -102,6 +87,16 @@
   
   if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateConnecting || cbPeripheral.state == CBPeripheralStateConnected))
     [self.CBCentralManager cancelPeripheralConnection:cbPeripheral];
+}
+
+- (void)getPeripheralInfo {
+
+  for (CBUUID *key __strong in _peripherals) {
+    AMPeripheral *value = [_peripherals objectForKey:key];
+    NSLog(@"Peripheral - %@", value.CBPeripheral);
+    
+    [value getServiceInfo];
+  }
 }
 
 
@@ -117,38 +112,25 @@
     case CBManagerStateResetting:
     case CBManagerStateUnsupported:
     case CBManagerStateUnauthorized:
-    {
-      dispatch_sync(dispatch_get_main_queue(), ^(void) { [self willChangeValueForKey:@"peripherals"]; });
       [self.peripherals removeAllObjects];
-      dispatch_sync(dispatch_get_main_queue(), ^(void) { [self didChangeValueForKey:@"peripherals"]; });
-      
       break;
-    }
+      
     case CBManagerStatePoweredOff:
       break;
+      
     case CBManagerStatePoweredOn:
-    {
       [self scanForPeripherals];
-      break;
-    }
-    default:
       break;
   }
 }
 
 - (void)centralManager:(CBCentralManager *)cbCentral didDiscoverPeripheral:(CBPeripheral *)cbPeripheral advertisementData:(NSDictionary*) advertisementData RSSI:(NSNumber *)RSSI {
-  
-  AMPeripheral *peripheral = self.peripherals[cbPeripheral.identifier];
 
-  if (peripheral == nil && ([cbPeripheral.name isEqual: @"G5 SE"] || [cbPeripheral.name isEqual: @"Galaxy J2 Prime"])) {
+  if ([cbPeripheral.name isEqual: @"G5 SE"] || [cbPeripheral.name isEqual: @"Galaxy J2 Prime"]) {
     NSLog(@"Info: CM Discover Peripheral: %@", cbPeripheral);
     
-    peripheral = [AMPeripheral peripheralWithCBPeripheral:cbPeripheral];
-    
-    dispatch_sync(dispatch_get_main_queue(), ^(void) { [self willChangeValueForKey:@"peripherals"]; });
+    AMPeripheral *peripheral = [AMPeripheral peripheralWithCBPeripheral:cbPeripheral];
     self.peripherals[peripheral.CBPeripheral.identifier] = peripheral;
-    dispatch_sync(dispatch_get_main_queue(), ^(void) { [self didChangeValueForKey:@"peripherals"]; });
-    
     [self connectPeripheral:peripheral];
   }
 }
@@ -160,23 +142,6 @@
   [peripheral didConnect];
 }
 
-- (void)peripheral:(CBPeripheral *)cbPeripheral didUpdateValueForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
-  NSLog(@"Error: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error);
-  
-  //AMService *service = self.services[cbCharacteristic.service.UUID];
-  //AMCharacteristics *characteristic = service.characteristics[cbCharacteristic.UUID];
-  //[characteristic didUpdateValueWithError:error];
-}
-
-- (void)peripheral:(CBPeripheral *)cbPeripheral didWriteValueForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
-  NSLog(@"Info: CBPeripheral did write value for characteristic: %@; Error: %@", cbCharacteristic, error);
-
-}
-
-- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
-  NSLog(@"Info: CBPeripheral did update notification state for characteristic: %@; Error: %@", cbCharacteristic, error);
-
-}
 
 #pragma mark -
 #pragma mark <CBCentralManagerDelegate> - Connection Failures
@@ -197,9 +162,23 @@
   [self scanForPeripherals];
 }
 
-- (void)centralManager:(CBCentralManager *)cbCentral willRestoreState:(NSDictionary *)dict {
-  NSLog(@"Info: CBCentralManager will restore state: %@", dict);
+
+#pragma mark -
+#pragma mark <UdpToBleBridgeDelegate>
+
+
+- (void)didSendData: (NSData *)data toPort:(NSInteger)port {
+  
+  for (CBUUID *key __strong in _peripherals) {
+    AMPeripheral *value = [_peripherals objectForKey:key];
+    
+    if (value.udpPort == port) {
+      [value sendRequestData: data];
+      return;
+    }
+  }
 }
+
 
 // **************************************** //
 

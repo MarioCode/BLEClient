@@ -15,13 +15,10 @@
 
 @property (nonatomic, readonly) CBService *Service;
 @property (nonatomic, readonly) NSMutableDictionary *characteristics;
-@property (nonatomic, readonly) PeripheryInfo *peripheryInfo;
-@property (nonatomic) BOOL discoverCharacteristicsInProgress;
 
-+ (instancetype)serviceWithCBService:(AMService *)cbService;
-- (instancetype)initWithCBService:(AMService *)cbService;
++ (instancetype)serviceWithCBService:(CBService *)cbService;
+- (instancetype)initWithCBService:(CBService *)cbService;
 
-- (void)discoverCharacteristics:(NSArray *)characteristicUUIDs;
-- (void)didDiscoverCharacteristicsWithError:(NSError *)error;
+- (void)discoverCharacteristics;
 
 @end

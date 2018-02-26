@@ -28,8 +28,6 @@
   if (self != nil) {
     if (cbService != nil) {
       _Service = cbService;
-      _peripheryInfo = [PeripheryInfo sharedInstance];
-
       _characteristics = [NSMutableDictionary dictionary];
     }
     else {
@@ -43,30 +41,14 @@
 #pragma mark -
 #pragma mark Methods
 
-- (void)discoverCharacteristics:(NSArray *)characteristicUUIDs {
+- (void)discoverCharacteristics {
   
-  if (self.discoverCharacteristicsInProgress) {
-    NSLog(@"Another discovery characteristics task is in progress.");
-    return;
-  }
-  
-  for (CBCharacteristic *characteristic in _Service.characteristics)
-    self.characteristics[characteristic.UUID] = characteristic;
-  
-  
-  self.discoverCharacteristicsInProgress = YES;
-  //[self.Service.peripheral discoverCharacteristics: self.peripheryInfo.characteristics forService:self.Service];
-}
-
-- (void)didDiscoverCharacteristicsWithError:(NSError *)error {
-  
-  if (error == nil) {
-    for (CBCharacteristic *cbChar in self.Service.characteristics) {
-      AMCharacteristics *characteristic = self.characteristics[cbChar.UUID];
-      
-      if (characteristic)
-        self.characteristics[characteristic.CBCharacteristic.UUID] = characteristic;
-    }
+  for (CBCharacteristic *characteristic in self.Service.characteristics) {
+    
+    AMCharacteristics *amChar = [AMCharacteristics characteristicWithCBCharacteristic:characteristic];
+    [amChar setNotifyValue:(characteristic.properties & CBCharacteristicPropertyNotify)];
+    
+    self.characteristics[characteristic.UUID] = amChar;
   }
 }
 

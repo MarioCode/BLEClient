@@ -10,12 +10,12 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Periphery.h"
 #import "AMPeripheral.h"
+#import "BridgeDelegate.h"
 
-@interface BLECentralManager : NSObject <CBCentralManagerDelegate>
+@interface BLECentralManager : NSObject <CBCentralManagerDelegate, UdpToBleBridgeDelegate>
 
 @property (nonatomic, readonly) CBCentralManager *CBCentralManager;
 @property (nonatomic, readonly) NSMutableDictionary *peripherals;
-@property (nonatomic, readonly) PeripheryInfo *peripheryInfo;
 
 + (instancetype)sharedManager;
 
@@ -24,5 +24,7 @@
 
 - (void)connectPeripheral:(AMPeripheral *)peripheral;
 - (void)disconnectPeripheral:(AMPeripheral *)peripheral;
+
+- (void)getPeripheralInfo;
 
 @end

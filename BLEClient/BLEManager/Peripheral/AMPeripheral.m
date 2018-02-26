@@ -29,10 +29,9 @@
   if (self != nil) {
     if (cbPeripheral != nil) {
       _CBPeripheral = cbPeripheral;
-      _CBPeripheral.delegate = self;
-      
-      _peripheryInfo = [PeripheryInfo sharedInstance];
+      _CBPeripheral.delegate = self;      
       _services = [NSMutableDictionary dictionary];
+      _udpPort = arc4random_uniform(65535 - 49152) + 49152;
     }
     else {
       self = nil;
@@ -46,17 +45,36 @@
 #pragma mark -
 #pragma mark Methods
 
-- (void)sendRequestData:(NSData *)requestData
-{
+
+- (void)sendRequestData:(NSData *)requestData {
+
   if ([self isConnected]) {
-    //VYDataTransferService *service = self.services[self.dataTransferServiceUUID];
-    //[service sendRequestData:requestData completion:handler];
+    NSLog(@"Get data for sending - %@", requestData);
   }
 }
 
 - (BOOL)isConnected {
   return self.CBPeripheral.state == CBPeripheralStateConnected;
 }
+
+- (void)getServiceInfo {
+  for (CBUUID *  key in _services) {
+    AMService *value = [_services objectForKey:key];
+    NSLog(@"Service UUID - %@", value.Service.UUID);
+    
+    for (CBUUID *key2 in value.characteristics) {
+
+      AMCharacteristics *charVal = [value.characteristics objectForKey:key2];
+      [charVal readValue];
+      
+      //NSLog(@"Char UUID - %@, Value - %@", charVal.CBCharacteristic.UUID, [charVal readValueWithCompletion:^(NSData *value, NSError *error) {
+      
+     // }] );
+      
+    }
+  }
+}
+
 
 #pragma mark -
 #pragma mark Handling CBCentralManager Callbacks
@@ -68,7 +86,8 @@
 }
 
 - (void)discoverServices {
-  [self.CBPeripheral discoverServices: self.peripheryInfo.services];
+  [self.CBPeripheral discoverServices:[PeripheryInfo sharedInstance].services];
+//  [self.CBPeripheral discoverServices: self.peripheryInfo.services];
 }
 
 - (void)didFailToConnectWithError:(NSError *)error {
@@ -79,14 +98,6 @@
   NSLog(@"Error: Peripheral Disconnected");
 }
 
-- (void)observeAllInfoForPeripheral {
-  for (CBUUID* key in self.services) {
-    id value = [self.services objectForKey:key];
-    //[self.CBPeripheral discoverCharacteristics:_peripheryInfo.characteristics forService:value];
-
-    // do stuff
-  }
-}
 
 #pragma mark -
 #pragma mark <CBPeripheralDelegate>
@@ -110,68 +121,30 @@
     
   for (CBService *cbService in cbPeripheral.services) {
     NSLog(@"Service: %@", cbService);
-    self.services[cbService.UUID] = cbService;
-    [self.CBPeripheral discoverCharacteristics:nil forService:self.services[cbService.UUID]];
+    AMService *amService = [AMService serviceWithCBService:cbService];
+    
+    self.services[cbService.UUID] = amService;
+    [self.CBPeripheral discoverCharacteristics:[PeripheryInfo sharedInstance].characteristics forService:cbService];
+    //[self.CBPeripheral discoverCharacteristics:_peripheryInfo.characteristics forService:cbService];
   }
-  [self observeAllInfoForPeripheral];
-
 }
 
-- (void)peripheral:(CBPeripheral *)cbPeripheral didDiscoverCharacteristicsForService:(CBService *)cbService error:(NSError *)error
-{
+- (void)peripheral:(CBPeripheral *)cbPeripheral didDiscoverCharacteristicsForService:(CBService *)cbService error:(NSError *)error {
   NSLog(@"Info: CBPeripheral did discover characteristics for service: %@; Error: %@", cbService, error);
-  
-  AMService *service = [[AMService alloc] initWithCBService:self.services[cbService.UUID]];
-  [service discoverCharacteristics:_peripheryInfo.characteristics];
+  [self.services[cbService.UUID] discoverCharacteristics];
 }
 
 - (void)peripheral:(CBPeripheral *)cbPeripheral didUpdateValueForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
-  NSLog(@"Error: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error);
+  NSLog(@"Info: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error);
   
   AMService *service = self.services[cbCharacteristic.service.UUID];
   AMCharacteristics *characteristic = service.characteristics[cbCharacteristic.UUID];
-  [characteristic didUpdateValueWithError:error];
-}
-
-- (void)peripheral:(CBPeripheral *)cbPeripheral didWriteValueForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
-  NSLog(@"Info: CBPeripheral did write value for characteristic: %@; Error: %@", cbCharacteristic, error);
   
-  AMService *service = self.services[cbCharacteristic.service.UUID];
-  AMCharacteristics *characteristic = service.characteristics[cbCharacteristic.UUID];
-  [characteristic didWriteValueWithError:error];
-}
-
-- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
-  NSLog(@"Info: CBPeripheral did update notification state for characteristic: %@; Error: %@", cbCharacteristic, error);
+  NSString *stringFromData = [[NSString alloc] initWithData:cbCharacteristic.value encoding:NSUTF8StringEncoding];
+  characteristic.charValue = stringFromData;
   
-  AMService *service = self.services[cbCharacteristic.service.UUID];
-  AMCharacteristics *characteristic = service.characteristics[cbCharacteristic.UUID];
-  [characteristic didUpdateNotificationStateWithError:error];
+  [_delegate didSendData:cbCharacteristic.value toPort:self.udpPort];
 }
 
-
-#pragma mark -
-#pragma mark Helper
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-  if (context == (__bridge void *)([self class]))
-  {
-    if (object == self.CBPeripheral)
-    {
-      if ([keyPath isEqualToString:@"services"])
-      {
-        if ([object valueForKeyPath:keyPath] == nil)
-        {
-          [self.services removeAllObjects];
-        }
-      }
-    }
-  }
-  else
-  {
-    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-  }
-}
 
 @end
