@@ -8,10 +8,8 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreBluetooth/CoreBluetooth.h>
-#import "CharTableViewCell.h"
-#import "Periphery.h"
-#import "UDPManager.h"
-#import "BLEManager.h"
+#import "BLECentralManager.h"
+#import "LocationManager.h"
 
 @interface MainViewController : UIViewController
 

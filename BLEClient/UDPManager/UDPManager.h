@@ -8,13 +8,16 @@
 
 #import <Foundation/Foundation.h>
 #import "GCDAsyncUdpSocket.h"
-#import "BridgeDelegate.h"
 #import "AMPeripheral.h"
 
-@interface UDPManager : NSObject < BleToUdpBridgeDelegate >
+//@class AMPeripheral;
 
-+ (UDPManager *)shareUDPSocket;
+@interface UDPManager : NSObject
+
+@property (nonatomic, strong) AMPeripheral *peripheral;
 
 - (void)didSendDataWithValue:(NSData *) data;
 - (void)updateConnectToPort:(NSInteger) port;
+- (void)disconnectSocket;
+
 @end

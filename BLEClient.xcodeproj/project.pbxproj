@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4424ABADEDD7B67EF415F93B /* libPods-BLEClient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B7C9B64FC0B2490A769A238 /* libPods-BLEClient.a */; };
 		77039F132035D66800BE574C /* BLEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 77039F122035D66800BE574C /* BLEManager.m */; };
+		7706A1D32043EF6300CB3FB7 /* BLESession.m in Sources */ = {isa = PBXBuildFile; fileRef = 7706A1D22043EF6300CB3FB7 /* BLESession.m */; };
 		770B73B920288D310099BC63 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 770B73B820288D310099BC63 /* AppDelegate.m */; };
 		770B73BC20288D310099BC63 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 770B73BB20288D310099BC63 /* MainViewController.m */; };
 		770B73BF20288D310099BC63 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 770B73BD20288D310099BC63 /* Main.storyboard */; };
@@ -22,7 +23,7 @@
 		77B904A1203C51770050DD0E /* AMService.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B904A0203C51770050DD0E /* AMService.m */; };
 		77B904A5203C51AC0050DD0E /* AMCharacteristics.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B904A4203C51AC0050DD0E /* AMCharacteristics.m */; };
 		77B904A9203C52810050DD0E /* AMPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B904A8203C52810050DD0E /* AMPeripheral.m */; };
-		77C3D8852043128400ED7CB0 /* BridgeDelegate.h in Sources */ = {isa = PBXBuildFile; fileRef = 77C3D8842043128400ED7CB0 /* BridgeDelegate.h */; };
+		77DA1CF92045828900063EE5 /* LocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 77DA1CF82045828900063EE5 /* LocationManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,8 @@
 		6B7C9B64FC0B2490A769A238 /* libPods-BLEClient.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BLEClient.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		77039F112035D66800BE574C /* BLEManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BLEManager.h; sourceTree = "<group>"; };
 		77039F122035D66800BE574C /* BLEManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BLEManager.m; sourceTree = "<group>"; };
+		7706A1D12043EF6300CB3FB7 /* BLESession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BLESession.h; sourceTree = "<group>"; };
+		7706A1D22043EF6300CB3FB7 /* BLESession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BLESession.m; sourceTree = "<group>"; };
 		770B73B420288D310099BC63 /* BLEClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLEClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		770B73B720288D310099BC63 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		770B73B820288D310099BC63 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -54,7 +57,8 @@
 		77B904A4203C51AC0050DD0E /* AMCharacteristics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMCharacteristics.m; sourceTree = "<group>"; };
 		77B904A7203C52810050DD0E /* AMPeripheral.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMPeripheral.h; sourceTree = "<group>"; };
 		77B904A8203C52810050DD0E /* AMPeripheral.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMPeripheral.m; sourceTree = "<group>"; };
-		77C3D8842043128400ED7CB0 /* BridgeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgeDelegate.h; sourceTree = "<group>"; };
+		77DA1CF72045828900063EE5 /* LocationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocationManager.h; sourceTree = "<group>"; };
+		77DA1CF82045828900063EE5 /* LocationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocationManager.m; sourceTree = "<group>"; };
 		FD2C8D1B6B559C7CF8E0C27A /* Pods-BLEClient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BLEClient.release.xcconfig"; path = "Pods/Target Support Files/Pods-BLEClient/Pods-BLEClient.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,9 +89,9 @@
 				77B904A6203C51B60050DD0E /* Characteristics */,
 				77B904A2203C51850050DD0E /* Service */,
 				77B904AA203C52880050DD0E /* Peripheral */,
+				7706A1D42043EF6B00CB3FB7 /* BLESession */,
 				7714E856203C57FD00AEAA33 /* BLECentralManager.h */,
 				7714E857203C57FD00AEAA33 /* BLECentralManager.m */,
-				77C3D8842043128400ED7CB0 /* BridgeDelegate.h */,
 			);
 			path = BLEManager;
 			sourceTree = "<group>";
@@ -99,6 +103,15 @@
 				778CF08E202B223C0018B009 /* CharTableViewCell.m */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		7706A1D42043EF6B00CB3FB7 /* BLESession */ = {
+			isa = PBXGroup;
+			children = (
+				7706A1D12043EF6300CB3FB7 /* BLESession.h */,
+				7706A1D22043EF6300CB3FB7 /* BLESession.m */,
+			);
+			path = BLESession;
 			sourceTree = "<group>";
 		};
 		770B73AB20288D310099BC63 = {
@@ -128,6 +141,7 @@
 				77039F152036EF8200BE574C /* View */,
 				77B904AB203C52B50050DD0E /* UDPManager */,
 				77039F142036EF1E00BE574C /* BLEManager */,
+				77DA1CFA2045829500063EE5 /* Location */,
 				770B73BA20288D310099BC63 /* MainViewController.h */,
 				770B73BB20288D310099BC63 /* MainViewController.m */,
 				778CF090202DA1960018B009 /* Periphery.h */,
@@ -184,6 +198,15 @@
 				7775689E203318E8006CCC57 /* UDPManager.m */,
 			);
 			path = UDPManager;
+			sourceTree = "<group>";
+		};
+		77DA1CFA2045829500063EE5 /* Location */ = {
+			isa = PBXGroup;
+			children = (
+				77DA1CF72045828900063EE5 /* LocationManager.h */,
+				77DA1CF82045828900063EE5 /* LocationManager.m */,
+			);
+			path = Location;
 			sourceTree = "<group>";
 		};
 		E4036ADD350C30DE76885BD1 /* Frameworks */ = {
@@ -328,11 +351,12 @@
 				770B73C720288D310099BC63 /* main.m in Sources */,
 				77B904A9203C52810050DD0E /* AMPeripheral.m in Sources */,
 				7714E858203C57FD00AEAA33 /* BLECentralManager.m in Sources */,
-				77C3D8852043128400ED7CB0 /* BridgeDelegate.h in Sources */,
+				7706A1D32043EF6300CB3FB7 /* BLESession.m in Sources */,
 				7775689F203318E8006CCC57 /* UDPManager.m in Sources */,
 				77B904A1203C51770050DD0E /* AMService.m in Sources */,
 				770B73B920288D310099BC63 /* AppDelegate.m in Sources */,
 				778CF08F202B223C0018B009 /* CharTableViewCell.m in Sources */,
+				77DA1CF92045828900063EE5 /* LocationManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

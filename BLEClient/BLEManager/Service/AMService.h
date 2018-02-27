@@ -13,12 +13,10 @@
 
 @interface AMService: NSObject
 
-@property (nonatomic, readonly) CBService *Service;
-@property (nonatomic, readonly) NSMutableDictionary *characteristics;
+@property (nonatomic, strong, readonly)CBService *Service;
+@property (nonatomic, strong, readonly) NSMutableDictionary *characteristics;
 
-+ (instancetype)serviceWithCBService:(CBService *)cbService;
-- (instancetype)initWithCBService:(CBService *)cbService;
-
+- (instancetype)initWith:(CBService *)cbService;
 - (void)discoverCharacteristics;
 
 @end

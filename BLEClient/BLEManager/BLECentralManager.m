@@ -44,10 +44,26 @@
     dispatch_queue_t queue = dispatch_queue_create("CentralManagerQueue", DISPATCH_QUEUE_SERIAL);
 
     _CBCentralManager = [[CBCentralManager alloc] initWithDelegate:self queue:queue options:nil];
-    _peripherals = [NSMutableDictionary dictionary];
+    _sessions = [NSMutableDictionary dictionary];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateCoordinate) name:@"GetLocationNotification" object:nil];
+
   }
   
   return self;
+}
+
+
+- (void)updateCoordinate {
+  if ([LocationManager sharedManager].currentLocation) {
+      CLLocationCoordinate2D coord = [LocationManager sharedManager].currentLocation.coordinate;
+    
+    for (CBUUID * key in self.sessions) {
+      BLESession *s = [self.sessions objectForKey:key];
+      NSString *strCoordinate = [NSString stringWithFormat:@"<%f : %f> Speed = %f", coord.latitude, coord.longitude, [LocationManager sharedManager].currentLocation.speed];
+      [s.peripheral didUpdateDeviceLocation:strCoordinate];
+    }
+  }
 }
 
 
@@ -60,7 +76,7 @@
   // TODO: Replace nil
   NSLog(@"Info: Start scanning");
   if (self.CBCentralManager.state == CBManagerStatePoweredOn) {
-    [self.peripherals removeAllObjects];
+    [self.sessions removeAllObjects];
     [self.CBCentralManager scanForPeripheralsWithServices:nil options:nil];
   }
 }
@@ -75,10 +91,8 @@
 
 - (void)connectPeripheral:(AMPeripheral *)peripheral {
   
-  CBPeripheral *cbPeripheral = peripheral.CBPeripheral;
-  
-  if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateDisconnected))
-    [self.CBCentralManager connectPeripheral:cbPeripheral options:nil];
+  if ((peripheral.CBPeripheral != nil) && (peripheral.CBPeripheral.state == CBPeripheralStateDisconnected))
+    [self.CBCentralManager connectPeripheral:peripheral.CBPeripheral options:nil];
 }
 
 - (void)disconnectPeripheral:(AMPeripheral *)peripheral {
@@ -87,16 +101,6 @@
   
   if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateConnecting || cbPeripheral.state == CBPeripheralStateConnected))
     [self.CBCentralManager cancelPeripheralConnection:cbPeripheral];
-}
-
-- (void)getPeripheralInfo {
-
-  for (CBUUID *key __strong in _peripherals) {
-    AMPeripheral *value = [_peripherals objectForKey:key];
-    NSLog(@"Peripheral - %@", value.CBPeripheral);
-    
-    [value getServiceInfo];
-  }
 }
 
 
@@ -112,7 +116,7 @@
     case CBManagerStateResetting:
     case CBManagerStateUnsupported:
     case CBManagerStateUnauthorized:
-      [self.peripherals removeAllObjects];
+      [self.sessions removeAllObjects];
       break;
       
     case CBManagerStatePoweredOff:
@@ -126,11 +130,20 @@
 
 - (void)centralManager:(CBCentralManager *)cbCentral didDiscoverPeripheral:(CBPeripheral *)cbPeripheral advertisementData:(NSDictionary*) advertisementData RSSI:(NSNumber *)RSSI {
 
-  if ([cbPeripheral.name isEqual: @"G5 SE"] || [cbPeripheral.name isEqual: @"Galaxy J2 Prime"]) {
+  if ([cbPeripheral.name isEqual: @"Honor"] || [cbPeripheral.name isEqual: @"Galaxy J2 Prime"]) {
     NSLog(@"Info: CM Discover Peripheral: %@", cbPeripheral);
+
+    if (self.sessions[cbPeripheral.identifier] != nil) {
+      BLESession *s = _sessions[cbPeripheral.identifier];
+      
+      [self connectPeripheral:s.peripheral];
+      return;
+    }
     
-    AMPeripheral *peripheral = [AMPeripheral peripheralWithCBPeripheral:cbPeripheral];
-    self.peripherals[peripheral.CBPeripheral.identifier] = peripheral;
+    AMPeripheral *peripheral = [[AMPeripheral alloc] initWith:cbPeripheral];
+    BLESession *session = [[BLESession alloc] initWith:peripheral];
+    self.sessions[peripheral.CBPeripheral.identifier] = session;
+    
     [self connectPeripheral:peripheral];
   }
 }
@@ -138,8 +151,8 @@
 - (void)centralManager:(CBCentralManager *)cbCentral didConnectPeripheral:(CBPeripheral *)cbPeripheral {
   NSLog(@"Info: CBCentralManager did connect peripheral: %@", cbPeripheral);
   
-  AMPeripheral *peripheral = self.peripherals[cbPeripheral.identifier];
-  [peripheral didConnect];
+  BLESession *session = self.sessions[cbPeripheral.identifier];
+  [session.peripheral didConnect];
 }
 
 
@@ -150,36 +163,37 @@
 - (void)centralManager:(CBCentralManager *)cbCentral didFailToConnectPeripheral:(CBPeripheral *)cbPeripheral error:(NSError *)error {
   NSLog(@"Error: CBCentralManager did fail connect peripheral: %@; Error: %@", cbPeripheral, error);
   
-  AMPeripheral *peripheral = self.peripherals[cbPeripheral.identifier];
-  [peripheral didFailToConnectWithError:error];
+  BLESession *session = self.sessions[cbPeripheral.identifier];
+  [session.peripheral didFailToConnectWithError:error];
 }
 
 - (void)centralManager:(CBCentralManager *)cbCentral didDisconnectPeripheral:(CBPeripheral *)cbPeripheral error:(NSError *)error {
   NSLog(@"Info: CBCentralManager did disconnect peripheral: %@; Error: %@", cbPeripheral, error);
   
-  AMPeripheral *peripheral = self.peripherals[cbPeripheral.identifier];
-  [peripheral didDisconnectWithError:error];
+  BLESession *session = self.sessions[cbPeripheral.identifier];
+  [session.peripheral didDisconnectWithError:error];
   [self scanForPeripherals];
 }
 
 
-#pragma mark -
-#pragma mark <UdpToBleBridgeDelegate>
+- (void)getAllInfo {
+  for (CBUUID *  key in self.sessions) {
+    BLESession *s = [self.sessions objectForKey:key];
 
-
-- (void)didSendData: (NSData *)data toPort:(NSInteger)port {
-  
-  for (CBUUID *key __strong in _peripherals) {
-    AMPeripheral *value = [_peripherals objectForKey:key];
-    
-    if (value.udpPort == port) {
-      [value sendRequestData: data];
-      return;
+    for (CBUUID *  key in s.peripheral.services) {
+      AMService *value = [s.peripheral.services objectForKey:key];
+      NSLog(@"Service UUID - %@", value.Service.UUID);
+      
+      for (CBUUID *key2 in value.characteristics) {
+        
+        AMCharacteristics *charVal = [value.characteristics objectForKey:key2];
+        [charVal readValue];
+        NSLog(@"Val - %@, Write - %d", charVal.charValue, charVal.isWrite);
+      }
     }
+    
   }
 }
-
-
 // **************************************** //
 
 @end

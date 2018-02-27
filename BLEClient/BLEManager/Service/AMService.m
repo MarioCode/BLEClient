@@ -15,14 +15,10 @@
 #pragma mark Init Services
 
 - (instancetype)init {
-  return [self initWithCBService:nil];
+  return [self initWith:nil];
 }
 
-+ (instancetype)serviceWithCBService:(CBService *)cbService {
-  return [[self alloc] initWithCBService:cbService];
-}
-
-- (instancetype)initWithCBService:(CBService *)cbService {
+- (instancetype)initWith:(CBService *)cbService {
   self = [super init];
   
   if (self != nil) {
@@ -38,16 +34,22 @@
   return self;
 }
 
+
 #pragma mark -
 #pragma mark Methods
+
 
 - (void)discoverCharacteristics {
   
   for (CBCharacteristic *characteristic in self.Service.characteristics) {
     
-    AMCharacteristics *amChar = [AMCharacteristics characteristicWithCBCharacteristic:characteristic];
+    AMCharacteristics *amChar = [[AMCharacteristics alloc] initWith:characteristic];
     [amChar setNotifyValue:(characteristic.properties & CBCharacteristicPropertyNotify)];
     
+    if (characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse)
+      amChar.isWrite = true;
+
+    NSLog(@"Info Char - %@", amChar.CBCharacteristic);
     self.characteristics[characteristic.UUID] = amChar;
   }
 }

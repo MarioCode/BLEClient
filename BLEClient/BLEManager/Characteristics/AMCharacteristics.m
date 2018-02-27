@@ -15,15 +15,11 @@
 #pragma mark Object Init
 
 - (instancetype)init {
-  return [self initWithCBCharacteristic:nil];
-}
-
-+ (instancetype)characteristicWithCBCharacteristic:(CBCharacteristic *)cbCharacteristic {
-  return [[self alloc] initWithCBCharacteristic:cbCharacteristic];
+  return [self initWith:nil];
 }
 
 
-- (instancetype)initWithCBCharacteristic:(CBCharacteristic *)cbCharacteristic {
+- (instancetype)initWith:(CBCharacteristic *)cbCharacteristic {
   self = [super init];
   
   if (self != nil) {
@@ -31,7 +27,7 @@
       _CBCharacteristic = cbCharacteristic;
       
       NSString *stringFromData = [[NSString alloc] initWithData:cbCharacteristic.value encoding:NSUTF8StringEncoding];
-      _charValue = stringFromData;
+      self.charValue = stringFromData;
     }
     else
       self = nil;
@@ -44,12 +40,14 @@
 #pragma mark Methods
 
 - (void)readValue {
-  if (_CBCharacteristic.properties & CBCharacteristicPropertyRead)
+  if (self.CBCharacteristic.properties & CBCharacteristicPropertyRead)
     [self.CBCharacteristic.service.peripheral readValueForCharacteristic:self.CBCharacteristic];
 }
 
-- (void)writeValue:(NSData *) value {
-  [self.CBCharacteristic.service.peripheral writeValue:[[self randomStringWithLength:7] dataUsingEncoding:NSASCIIStringEncoding] forCharacteristic:self.CBCharacteristic type:CBCharacteristicWriteWithResponse];
+- (void)writeValue:(NSString *) value {
+  if (self.isWrite) {
+    [self.CBCharacteristic.service.peripheral writeValue:[value dataUsingEncoding:NSASCIIStringEncoding] forCharacteristic:self.CBCharacteristic type:CBCharacteristicWriteWithResponse];
+  }
 }
 
 - (void)setNotifyValue:(BOOL)enabled  {

@@ -8,7 +8,7 @@
 
 #import "AMPeripheral.h"
 #import "AMCharacteristics.h"
-
+#import "UDPManager.h"
 
 @implementation AMPeripheral
 
@@ -16,14 +16,11 @@
 #pragma mark Init
 
 - (instancetype)init {
-  return [self initWithCBPeripheral:nil];
+  return [self initWith:nil];
 }
 
-+ (instancetype)peripheralWithCBPeripheral:(CBPeripheral *)cbPeripheral {
-  return [[self alloc] initWithCBPeripheral:cbPeripheral];
-}
 
-- (instancetype)initWithCBPeripheral:(CBPeripheral *)cbPeripheral {
+- (instancetype)initWith:(CBPeripheral *)cbPeripheral {
   self = [super init];
   
   if (self != nil) {
@@ -46,6 +43,19 @@
 #pragma mark Methods
 
 
+- (void)didUpdateDeviceLocation:(NSString *)coordinates {
+  for (CBUUID *  key in self.services) {
+    AMService *value = [self.services objectForKey:key];
+    
+    for (CBUUID *key in value.characteristics) {
+      AMCharacteristics *charVal = [value.characteristics objectForKey:key];
+      if (charVal.isWrite)
+        [charVal writeValue:coordinates];
+    }
+  }
+}
+
+
 - (void)sendRequestData:(NSData *)requestData {
 
   if ([self isConnected]) {
@@ -53,31 +63,15 @@
   }
 }
 
+
 - (BOOL)isConnected {
   return self.CBPeripheral.state == CBPeripheralStateConnected;
-}
-
-- (void)getServiceInfo {
-  for (CBUUID *  key in _services) {
-    AMService *value = [_services objectForKey:key];
-    NSLog(@"Service UUID - %@", value.Service.UUID);
-    
-    for (CBUUID *key2 in value.characteristics) {
-
-      AMCharacteristics *charVal = [value.characteristics objectForKey:key2];
-      [charVal readValue];
-      
-      //NSLog(@"Char UUID - %@, Value - %@", charVal.CBCharacteristic.UUID, [charVal readValueWithCompletion:^(NSData *value, NSError *error) {
-      
-     // }] );
-      
-    }
-  }
 }
 
 
 #pragma mark -
 #pragma mark Handling CBCentralManager Callbacks
+
 
 - (void)didConnect {
   
@@ -87,7 +81,6 @@
 
 - (void)discoverServices {
   [self.CBPeripheral discoverServices:[PeripheryInfo sharedInstance].services];
-//  [self.CBPeripheral discoverServices: self.peripheryInfo.services];
 }
 
 - (void)didFailToConnectWithError:(NSError *)error {
@@ -121,19 +114,21 @@
     
   for (CBService *cbService in cbPeripheral.services) {
     NSLog(@"Service: %@", cbService);
-    AMService *amService = [AMService serviceWithCBService:cbService];
+    AMService *amService = [[AMService alloc] initWith:cbService];
     
     self.services[cbService.UUID] = amService;
     [self.CBPeripheral discoverCharacteristics:[PeripheryInfo sharedInstance].characteristics forService:cbService];
-    //[self.CBPeripheral discoverCharacteristics:_peripheryInfo.characteristics forService:cbService];
   }
 }
+
 
 - (void)peripheral:(CBPeripheral *)cbPeripheral didDiscoverCharacteristicsForService:(CBService *)cbService error:(NSError *)error {
   NSLog(@"Info: CBPeripheral did discover characteristics for service: %@; Error: %@", cbService, error);
   [self.services[cbService.UUID] discoverCharacteristics];
 }
 
+
+// Recieve data from device
 - (void)peripheral:(CBPeripheral *)cbPeripheral didUpdateValueForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
   NSLog(@"Info: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error);
   
@@ -143,7 +138,7 @@
   NSString *stringFromData = [[NSString alloc] initWithData:cbCharacteristic.value encoding:NSUTF8StringEncoding];
   characteristic.charValue = stringFromData;
   
-  [_delegate didSendData:cbCharacteristic.value toPort:self.udpPort];
+ // [self.udpManager didSendDataWithValue:cbCharacteristic.value];
 }
 
 

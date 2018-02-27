@@ -10,26 +10,26 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Periphery.h"
 #import "AMService.h"
-#import "BridgeDelegate.h"
+//#import "UDPManager.h"
+
+@class UDPManager;
 
 @interface AMPeripheral : NSObject <CBPeripheralDelegate>
 
-@property (nonatomic, readonly) CBPeripheral *CBPeripheral;
-@property (nonatomic, readonly) NSMutableDictionary *services;
+@property (nonatomic, strong, readonly) CBPeripheral *CBPeripheral;
+@property (nonatomic, strong, readonly) NSMutableDictionary *services;
+@property (nonatomic, strong) UDPManager *udpManager;
 @property (nonatomic, readonly) NSInteger udpPort;
-@property (nonatomic, weak) id <BleToUdpBridgeDelegate> delegate;
 
-+ (instancetype)peripheralWithCBPeripheral:(CBPeripheral *)cbPeripheral;
-- (instancetype)initWithCBPeripheral:(CBPeripheral *)cbPeripheral;
+- (instancetype)initWith:(CBPeripheral *)cbPeripheral;
 
 - (void)sendRequestData:(NSData *)requestData;
 - (BOOL)isConnected;
-- (void)getServiceInfo;
 
-// Handling CBCentralManager callbacks.
+// Handling CBCentralManager
 - (void)didConnect;
 - (void)discoverServices;
 - (void)didFailToConnectWithError:(NSError *)error;
 - (void)didDisconnectWithError:(NSError *)error;
-
+- (void)didUpdateDeviceLocation:(NSString *)coordinates;
 @end
