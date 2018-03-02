@@ -140,8 +140,8 @@
     if (self.sessions[cbPeripheral.identifier] != nil) {
       BLESession *session = self.sessions[cbPeripheral.identifier];
       
-      if (RSSI.intValue < -90) {
-        [self.sessions removeObjectForKey:cbPeripheral.identifier];
+      if (RSSI.intValue < -93) {
+        [self.CBCentralManager cancelPeripheralConnection:session.peripheral.CBPeripheral];
         return;
       }
       
