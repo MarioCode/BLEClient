@@ -39,15 +39,18 @@
 #pragma mark Methods
 
 
+// Search for a service characteristic
 - (void)discoverCharacteristics {
   
   for (CBCharacteristic *characteristic in self.Service.characteristics) {
     
     AMCharacteristics *amChar = [[AMCharacteristics alloc] initWith:characteristic];
     [amChar setNotifyValue:(characteristic.properties & CBCharacteristicPropertyNotify)];
+    [amChar readValue];
     
-    if (characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse)
+    if (characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) {
       amChar.isWrite = true;
+    }
 
     NSLog(@"Info Char - %@", amChar.CBCharacteristic);
     self.characteristics[characteristic.UUID] = amChar;

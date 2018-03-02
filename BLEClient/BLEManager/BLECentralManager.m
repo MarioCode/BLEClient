@@ -46,41 +46,31 @@
     _CBCentralManager = [[CBCentralManager alloc] initWithDelegate:self queue:queue options:nil];
     _sessions = [NSMutableDictionary dictionary];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateCoordinate) name:@"GetLocationNotification" object:nil];
-
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getAndUpdateCoordinate) name:@"GetLocationNotification" object:nil];
   }
   
   return self;
 }
 
 
-- (void)updateCoordinate {
-  if ([LocationManager sharedManager].currentLocation) {
-      CLLocationCoordinate2D coord = [LocationManager sharedManager].currentLocation.coordinate;
-    
-    for (CBUUID * key in self.sessions) {
-      BLESession *s = [self.sessions objectForKey:key];
-      NSString *strCoordinate = [NSString stringWithFormat:@"<%f : %f> Speed = %f", coord.latitude, coord.longitude, [LocationManager sharedManager].currentLocation.speed];
-      [s.peripheral didUpdateDeviceLocation:strCoordinate];
-    }
-  }
-}
-
-
 #pragma mark -
-#pragma mark Methods
+#pragma mark Handheld Methods
 
 
+// Start scanning for peripheral devices
 - (void)scanForPeripherals {
   
-  // TODO: Replace nil
-  NSLog(@"Info: Start scanning");
+  // If bluetooth is on, start scan
   if (self.CBCentralManager.state == CBManagerStatePoweredOn) {
-    [self.sessions removeAllObjects];
-    [self.CBCentralManager scanForPeripheralsWithServices:nil options:nil];
+    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], CBCentralManagerScanOptionAllowDuplicatesKey, nil];
+    
+    // nil services - searching all available devices
+    [self.CBCentralManager scanForPeripheralsWithServices:nil options:options];
   }
 }
 
+
+// Stop scan for peripheral
 - (void)stopScanForPeripherals {
   
   NSLog(@"Info: Stop scanning");
@@ -89,18 +79,26 @@
   }
 }
 
+
+// Connection to the device
 - (void)connectPeripheral:(AMPeripheral *)peripheral {
   
-  if ((peripheral.CBPeripheral != nil) && (peripheral.CBPeripheral.state == CBPeripheralStateDisconnected))
+  // If the device is available and not currently connected
+  if ((peripheral.CBPeripheral != nil) && (peripheral.CBPeripheral.state == CBPeripheralStateDisconnected)) {
     [self.CBCentralManager connectPeripheral:peripheral.CBPeripheral options:nil];
+  }
 }
 
+
+// Disconnect from one of the devices
 - (void)disconnectPeripheral:(AMPeripheral *)peripheral {
   
   CBPeripheral *cbPeripheral = peripheral.CBPeripheral;
   
-  if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateConnecting || cbPeripheral.state == CBPeripheralStateConnected))
+  if ((cbPeripheral != nil) && (cbPeripheral.state == CBPeripheralStateConnecting
+                                || cbPeripheral.state == CBPeripheralStateConnected)) {
     [self.CBCentralManager cancelPeripheralConnection:cbPeripheral];
+  }
 }
 
 
@@ -108,51 +106,68 @@
 #pragma mark <CBCentralManagerDelegate>
 
 
+// Update status of central manager (current device)
 - (void)centralManagerDidUpdateState:(CBCentralManager *)cbCentral {
-  NSLog(@"Info: CBCentralManager did update state: %ld", (long)cbCentral.state);
   
   switch (cbCentral.state) {
     case CBManagerStateUnknown:
     case CBManagerStateResetting:
     case CBManagerStateUnsupported:
     case CBManagerStateUnauthorized:
+      NSLog(@"Error: Failure to connect");
       [self.sessions removeAllObjects];
       break;
       
     case CBManagerStatePoweredOff:
+      NSLog(@"Error: The Bluetooth is off");
       break;
       
     case CBManagerStatePoweredOn:
+      NSLog(@"Info: Start scanning");
       [self scanForPeripherals];
       break;
   }
 }
 
+
+// Find all or defined peripheral devices
 - (void)centralManager:(CBCentralManager *)cbCentral didDiscoverPeripheral:(CBPeripheral *)cbPeripheral advertisementData:(NSDictionary*) advertisementData RSSI:(NSNumber *)RSSI {
-
-  if ([cbPeripheral.name isEqual: @"Honor"] || [cbPeripheral.name isEqual: @"Galaxy J2 Prime"]) {
-    NSLog(@"Info: CM Discover Peripheral: %@", cbPeripheral);
-
+  
+  //TODO: remove if condition, because we will search for certain UUID
+  if ([cbPeripheral.name isEqual: @"G5 SE"] || [cbPeripheral.name isEqual: @"Galaxy J2 Prime"]) {
+    NSLog(@"Info: CM Discover Peripheral: RSSI - %@", RSSI);
+    
     if (self.sessions[cbPeripheral.identifier] != nil) {
-      BLESession *s = _sessions[cbPeripheral.identifier];
+      BLESession *session = self.sessions[cbPeripheral.identifier];
       
-      [self connectPeripheral:s.peripheral];
+      if (RSSI.intValue < -90) {
+        [self.sessions removeObjectForKey:cbPeripheral.identifier];
+        return;
+      }
+      
+      [session.peripheral setForCanUpdateCoordinate:RSSI.integerValue];
+      [self connectPeripheral:session.peripheral];
       return;
     }
     
     AMPeripheral *peripheral = [[AMPeripheral alloc] initWith:cbPeripheral];
+    [peripheral setForCanUpdateCoordinate:RSSI.integerValue];
     BLESession *session = [[BLESession alloc] initWith:peripheral];
+    
     self.sessions[peripheral.CBPeripheral.identifier] = session;
     
     [self connectPeripheral:peripheral];
   }
 }
 
+
+// Connection to the found device
 - (void)centralManager:(CBCentralManager *)cbCentral didConnectPeripheral:(CBPeripheral *)cbPeripheral {
+  
   NSLog(@"Info: CBCentralManager did connect peripheral: %@", cbPeripheral);
   
   BLESession *session = self.sessions[cbPeripheral.identifier];
-  [session.peripheral didConnect];
+  [session.peripheral didConnectAndDiscoverServices];
 }
 
 
@@ -160,26 +175,55 @@
 #pragma mark <CBCentralManagerDelegate> - Connection Failures
 
 
+// Connect is fail
 - (void)centralManager:(CBCentralManager *)cbCentral didFailToConnectPeripheral:(CBPeripheral *)cbPeripheral error:(NSError *)error {
+  
+  if (error != nil) {
+    NSLog(@"Error: CBPeripheral did fail to connect peripheral with error: %@", error);
+    return;
+  }
+  
   NSLog(@"Error: CBCentralManager did fail connect peripheral: %@; Error: %@", cbPeripheral, error);
   
-  BLESession *session = self.sessions[cbPeripheral.identifier];
-  [session.peripheral didFailToConnectWithError:error];
+  [self.sessions removeObjectForKey:cbPeripheral.identifier];
 }
 
+
+// Disconnected
 - (void)centralManager:(CBCentralManager *)cbCentral didDisconnectPeripheral:(CBPeripheral *)cbPeripheral error:(NSError *)error {
-  NSLog(@"Info: CBCentralManager did disconnect peripheral: %@; Error: %@", cbPeripheral, error);
+  
+  NSLog(@"Error: CBCentralManager did disconnect peripheral: %@; Error: %@", cbPeripheral, error);
   
   BLESession *session = self.sessions[cbPeripheral.identifier];
-  [session.peripheral didDisconnectWithError:error];
-  [self scanForPeripherals];
+  [session.udpSocket closeSocket];
+  [self.sessions removeObjectForKey:cbPeripheral.identifier];
 }
 
 
+#pragma mark -
+#pragma mark Other Methods
+
+
+// Getting coordinates from Location Mahaner
+- (void) getAndUpdateCoordinate {
+  
+  if ([LocationManager sharedManager].currentLocation) {
+    CLLocationCoordinate2D coord = [LocationManager sharedManager].currentLocation.coordinate;
+    
+    for (CBUUID * key in self.sessions) {
+      BLESession *session = [self.sessions objectForKey:key];
+      NSString *strCoordinate = [NSString stringWithFormat:@"<%f : %f> Speed = %f", coord.latitude, coord.longitude, [LocationManager sharedManager].currentLocation.speed];
+      [session.peripheral updateDeviceLocation:strCoordinate];
+    }
+  }
+}
+
+
+// Temporarily. For the test and retrieve information.
 - (void)getAllInfo {
   for (CBUUID *  key in self.sessions) {
     BLESession *s = [self.sessions objectForKey:key];
-
+    
     for (CBUUID *  key in s.peripheral.services) {
       AMService *value = [s.peripheral.services objectForKey:key];
       NSLog(@"Service UUID - %@", value.Service.UUID);
@@ -191,9 +235,9 @@
         NSLog(@"Val - %@, Write - %d", charVal.charValue, charVal.isWrite);
       }
     }
-    
   }
 }
+
 // **************************************** //
 
 @end

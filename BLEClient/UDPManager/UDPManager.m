@@ -7,6 +7,7 @@
 //
 
 #import "UDPManager.h"
+#import "AMPeripheral.h"
 
 #define SOCKADRS  "52.89.163.195"
 #define SOCKPORT  8188
@@ -47,7 +48,7 @@
 // Send message via UDP (HEX data)
 - (void)didSendDataWithValue:(NSData *) data {
   
-  NSLog(@"Send - Current port: %hu", _udpSocket.localPort);
+  NSLog(@"Send - Current port: %hu", self.udpSocket.localPort);
   
   NSString *str1 = @"A6CC000000010ED9805A00000000000000000000000000004E008303F432003839343231303";
   NSString *str2 = @"2343830303131303935383231007B080D8600000A7B080D860000127B080E86000010C25DBF1";
@@ -68,9 +69,9 @@
   uint16_t port = 0;
   [GCDAsyncUdpSocket getHost:&host port:&port fromAddress:address];
   
-  NSLog(@"Rcv - Current port: %hu", _udpSocket.localPort);
+  NSLog(@"Rcv - Current port: %hu", self.udpSocket.localPort);
   NSLog(@"Receive data: %@ /nfrom: %@:%hu", data, host, port);
-  [self.peripheral sendRequestData:data];
+  [self.peripheral receivingDataFromUDP:data];
 }
 
 
@@ -80,7 +81,7 @@
   NSError *error = nil;
   [self.udpSocket close];
   
-  if (![_udpSocket bindToPort:port error:&error]) {
+  if (![self.udpSocket bindToPort:port error:&error]) {
     NSLog(@"Error binding: %@", error);
     return;
   }
@@ -92,22 +93,18 @@
 }
 
 
-- (void)didSendData: (NSData *)data toPort:(NSInteger)port {
-  if (self.udpSocket.localPort != port) {
-    [self updateConnectToPort:port];
-  }
-  
-  //[self didSendDataWithValue:data];
-}
-
-
 - (void)disconnectSocket {
-  [_udpSocket close];
+  [self.udpSocket close];
 }
 
 
 #pragma mark -
 #pragma mark Helpers
+
+
+- (void)closeSocket {
+  [self.udpSocket close];
+}
 
 
 // Transform HEX Data from NSString to NSData

@@ -28,7 +28,6 @@
       _CBPeripheral = cbPeripheral;
       _CBPeripheral.delegate = self;      
       _services = [NSMutableDictionary dictionary];
-      _udpPort = arc4random_uniform(65535 - 49152) + 49152;
     }
     else {
       self = nil;
@@ -43,12 +42,20 @@
 #pragma mark Methods
 
 
-- (void)didUpdateDeviceLocation:(NSString *)coordinates {
-  for (CBUUID *  key in self.services) {
+// Update the coordinates for the device. Write to the characteristic.
+- (void)updateDeviceLocation:(NSString *)coordinates {
+  
+  if (!self.isCanUpdateCoordinate) {
+    return;
+  }
+  
+  for (CBUUID *key in self.services) {
     AMService *value = [self.services objectForKey:key];
     
     for (CBUUID *key in value.characteristics) {
       AMCharacteristics *charVal = [value.characteristics objectForKey:key];
+      
+      // TODO: Specify which characteristic to record.
       if (charVal.isWrite)
         [charVal writeValue:coordinates];
     }
@@ -56,39 +63,42 @@
 }
 
 
-- (void)sendRequestData:(NSData *)requestData {
+//  Recieve data from UDP
+- (void)receivingDataFromUDP:(NSData *)recieveData {
 
   if ([self isConnected]) {
-    NSLog(@"Get data for sending - %@", requestData);
+    [self writeRecieveDataToCharacheristic:recieveData];
   }
 }
 
 
+// And send to peripheral's characteristic
+- (void)writeRecieveDataToCharacheristic:(NSData *)requestData {
+  NSLog(@"Get data for sending - %@", requestData);
+}
+
+
+// Checking peripheral connecting
 - (BOOL)isConnected {
   return self.CBPeripheral.state == CBPeripheralStateConnected;
 }
 
 
-#pragma mark -
-#pragma mark Handling CBCentralManager Callbacks
-
-
-- (void)didConnect {
+// Trying finding services for peripheral
+- (void)didConnectAndDiscoverServices {
   
   NSLog(@"Info: Connected to %@", self.CBPeripheral);
-  [self discoverServices];
-}
-
-- (void)discoverServices {
   [self.CBPeripheral discoverServices:[PeripheryInfo sharedInstance].services];
 }
 
-- (void)didFailToConnectWithError:(NSError *)error {
-  NSLog(@"Error: Fail To Connect");
-}
 
-- (void)didDisconnectWithError:(NSError *)error {
-  NSLog(@"Error: Peripheral Disconnected");
+// Custom setter for property
+- (void) setForCanUpdateCoordinate:(NSInteger)RSSI {
+  if (RSSI < -75) {
+    self.isCanUpdateCoordinate = false;
+  } else {
+    self.isCanUpdateCoordinate = true;
+  }
 }
 
 
@@ -96,13 +106,7 @@
 #pragma mark <CBPeripheralDelegate>
 
 
-- (void)peripheral:(CBPeripheral *)cbPripheral didModifyServices:(NSArray *)invalidatedCBServices {
-  NSLog(@"Info: CBPeripheral did modify services: %@", invalidatedCBServices);
-  
-  NSArray *serviceUUIDs = [invalidatedCBServices valueForKey:@"UUID"];
-  [self.services removeObjectsForKeys:serviceUUIDs];
-}
-
+// - didDiscoverServices
 - (void)peripheral:(CBPeripheral *)cbPeripheral didDiscoverServices:(NSError *)error {
   
   if (error != nil) {
@@ -122,7 +126,14 @@
 }
 
 
+// Discover characteristics for services
 - (void)peripheral:(CBPeripheral *)cbPeripheral didDiscoverCharacteristicsForService:(CBService *)cbService error:(NSError *)error {
+  
+  if (error != nil) {
+    NSLog(@"Error: CBPeripheral did discover characteristics with error: %@", error);
+    return;
+  }
+  
   NSLog(@"Info: CBPeripheral did discover characteristics for service: %@; Error: %@", cbService, error);
   [self.services[cbService.UUID] discoverCharacteristics];
 }
@@ -130,6 +141,12 @@
 
 // Recieve data from device
 - (void)peripheral:(CBPeripheral *)cbPeripheral didUpdateValueForCharacteristic:(CBCharacteristic *)cbCharacteristic error:(NSError *)error {
+  
+  if (error != nil) {
+    NSLog(@"Error: CBPeripheral did update value for characteristic with error: %@", error);
+    return;
+  }
+  
   NSLog(@"Info: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error);
   
   AMService *service = self.services[cbCharacteristic.service.UUID];
@@ -138,8 +155,18 @@
   NSString *stringFromData = [[NSString alloc] initWithData:cbCharacteristic.value encoding:NSUTF8StringEncoding];
   characteristic.charValue = stringFromData;
   
- // [self.udpManager didSendDataWithValue:cbCharacteristic.value];
+  [self.udpManager didSendDataWithValue:cbCharacteristic.value];
 }
 
+
+
+// - didModifyServices
+- (void)peripheral:(CBPeripheral *)cbPripheral didModifyServices:(NSArray *)invalidatedCBServices {
+  
+  NSLog(@"Info: CBPeripheral did modify services: %@", invalidatedCBServices);
+  
+  NSArray *serviceUUIDs = [invalidatedCBServices valueForKey:@"UUID"];
+  [self.services removeObjectsForKeys:serviceUUIDs];
+}
 
 @end

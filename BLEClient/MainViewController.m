@@ -24,7 +24,7 @@
 }
 
 - (void)stop {
-  [[BLECentralManager sharedManager] stopScanForPeripherals];
+//  [[BLECentralManager sharedManager] stopScanForPeripherals];
 }
 
 

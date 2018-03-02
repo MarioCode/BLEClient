@@ -36,24 +36,30 @@
   return self;
 }
 
+
 #pragma mark -
-#pragma mark Methods
+#pragma mark Handheld Methods
+
 
 - (void)readValue {
   if (self.CBCharacteristic.properties & CBCharacteristicPropertyRead)
     [self.CBCharacteristic.service.peripheral readValueForCharacteristic:self.CBCharacteristic];
 }
 
+
 - (void)writeValue:(NSString *) value {
   if (self.isWrite) {
-    [self.CBCharacteristic.service.peripheral writeValue:[value dataUsingEncoding:NSASCIIStringEncoding] forCharacteristic:self.CBCharacteristic type:CBCharacteristicWriteWithResponse];
+    [self.CBCharacteristic.service.peripheral writeValue:[[self randomStringWithLength:7] dataUsingEncoding:NSASCIIStringEncoding] forCharacteristic:self.CBCharacteristic type:CBCharacteristicWriteWithResponse];
   }
 }
+
 
 - (void)setNotifyValue:(BOOL)enabled  {
   [self.CBCharacteristic.service.peripheral setNotifyValue:enabled forCharacteristic:self.CBCharacteristic];
 }
 
+
+//TODO: For test, remove it
 -(NSString *) randomStringWithLength: (int) len {
   
   NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

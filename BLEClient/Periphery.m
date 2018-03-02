@@ -29,19 +29,25 @@
   self = [super init];
   if (self) {
     _services = [[NSMutableArray <CBUUID *> alloc] init];
+    
+    [_services addObject:[CBUUID UUIDWithString:@"0000FFB1-0000-1000-8000-00805f8b34fb"]];
+
     [_services addObject:[CBUUID UUIDWithString:@"0000ffa1-0000-1000-8000-00805F8B34FB"]];
-    [_services addObject:[CBUUID UUIDWithString:@"0000ffa2-0000-1000-8000-00805F8B34FB"]];
-    [_services addObject:[CBUUID UUIDWithString:@"0000ffb1-0000-1000-8000-00805F8B34FB"]];
+    //[_services addObject:[CBUUID UUIDWithString:@"0000ffa2-0000-1000-8000-00805F8B34FB"]];
+    //[_services addObject:[CBUUID UUIDWithString:@"0000ffb1-0000-1000-8000-00805F8B34FB"]];
 
     _characteristics = [[NSMutableArray <CBUUID *> alloc] init];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff11-0000-1000-8000-00805F8B34FB"]];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff12-0000-1000-8000-00805F8B34FB"]];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff13-0000-1000-8000-00805F8B34FB"]];
+    
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000FF21-0000-1000-8000-00805f8b34fb"]];
 
+//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff11-0000-1000-8000-00805F8B34FB"]];
+//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff12-0000-1000-8000-00805F8B34FB"]];
+//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff13-0000-1000-8000-00805F8B34FB"]];
+//
     [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff21-0000-1000-8000-00805F8B34FB"]];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff22-0000-1000-8000-00805F8B34FB"]];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff23-0000-1000-8000-00805F8B34FB"]];
-    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff24-0000-1000-8000-00805F8B34FB"]];
+//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff22-0000-1000-8000-00805F8B34FB"]];
+//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff23-0000-1000-8000-00805F8B34FB"]];
+//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff24-0000-1000-8000-00805F8B34FB"]];
 
     _deviceName = @"G5 SE";
   }

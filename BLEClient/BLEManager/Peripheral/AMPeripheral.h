@@ -10,7 +10,6 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Periphery.h"
 #import "AMService.h"
-//#import "UDPManager.h"
 
 @class UDPManager;
 
@@ -19,17 +18,14 @@
 @property (nonatomic, strong, readonly) CBPeripheral *CBPeripheral;
 @property (nonatomic, strong, readonly) NSMutableDictionary *services;
 @property (nonatomic, strong) UDPManager *udpManager;
-@property (nonatomic, readonly) NSInteger udpPort;
+@property (nonatomic, assign) BOOL isCanUpdateCoordinate;
 
 - (instancetype)initWith:(CBPeripheral *)cbPeripheral;
 
-- (void)sendRequestData:(NSData *)requestData;
 - (BOOL)isConnected;
+- (void)receivingDataFromUDP:(NSData *)recieveData;
+- (void)didConnectAndDiscoverServices;
+- (void)updateDeviceLocation:(NSString *)coordinates;
+- (void)setForCanUpdateCoordinate:(NSInteger)RSSI;
 
-// Handling CBCentralManager
-- (void)didConnect;
-- (void)discoverServices;
-- (void)didFailToConnectWithError:(NSError *)error;
-- (void)didDisconnectWithError:(NSError *)error;
-- (void)didUpdateDeviceLocation:(NSString *)coordinates;
 @end

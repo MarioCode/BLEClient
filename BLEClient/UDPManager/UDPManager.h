@@ -8,16 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import "GCDAsyncUdpSocket.h"
-#import "AMPeripheral.h"
 
-//@class AMPeripheral;
+@class AMPeripheral;
 
 @interface UDPManager : NSObject
 
 @property (nonatomic, strong) AMPeripheral *peripheral;
 
+- (void)closeSocket;
 - (void)didSendDataWithValue:(NSData *) data;
-- (void)updateConnectToPort:(NSInteger) port;
-- (void)disconnectSocket;
 
 @end
