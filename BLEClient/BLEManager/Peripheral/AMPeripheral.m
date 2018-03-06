@@ -54,9 +54,6 @@
     
     for (CBUUID *key in value.characteristics) {
       AMCharacteristics *charVal = [value.characteristics objectForKey:key];
-      
-      // TODO: Specify which characteristic to record.
-      if (charVal.isWrite)
         [charVal writeValue:coordinates];
     }
   }
@@ -74,7 +71,18 @@
 
 // And send to peripheral's characteristic
 - (void)writeRecieveDataToCharacheristic:(NSData *)requestData {
-  NSLog(@"Get data for sending - %@", requestData);
+  
+  [[Logger sharedManager] sendLogToMainVC:@"Info: UDP -> BLE> Write recieve data to characheristic"];
+
+  for (CBUUID * key in self.services) {
+    AMService *value = [self.services objectForKey:key];
+    
+    for (CBUUID *key2 in value.characteristics) {
+      
+      AMCharacteristics *charVal = [value.characteristics objectForKey:key2];
+        [charVal writeValue:requestData];
+    }
+  }
 }
 
 
@@ -87,7 +95,9 @@
 // Trying finding services for peripheral
 - (void)didConnectAndDiscoverServices {
   
-  NSLog(@"Info: Connected to %@", self.CBPeripheral);
+  NSString *log = [NSString stringWithFormat:@"Info: Connected to %@", self.CBPeripheral];
+  [[Logger sharedManager] sendLogToMainVC:log];
+  
   [self.CBPeripheral discoverServices:[PeripheryInfo sharedInstance].services];
 }
 
@@ -110,14 +120,17 @@
 - (void)peripheral:(CBPeripheral *)cbPeripheral didDiscoverServices:(NSError *)error {
   
   if (error != nil) {
-    NSLog(@"Error: CBPeripheral did discover service with error: %@", error);
+    NSString *log = [NSString stringWithFormat:@"ErrorCB: CBPeripheral did discover service with error: %@", error];
+    [[Logger sharedManager] sendLogToMainVC:log];
     return;
   }
   
-  NSLog(@"Info: CBPeripheral did discover services");
-    
+  [[Logger sharedManager] sendLogToMainVC:@"Info: CBPeripheral did discover services"];
+  
   for (CBService *cbService in cbPeripheral.services) {
-    NSLog(@"Service: %@", cbService);
+    NSString *log = [NSString stringWithFormat:@"Service: %@", cbService];
+    [[Logger sharedManager] sendLogToMainVC:log];
+    
     AMService *amService = [[AMService alloc] initWith:cbService];
     
     self.services[cbService.UUID] = amService;
@@ -134,7 +147,9 @@
     return;
   }
   
-  NSLog(@"Info: CBPeripheral did discover characteristics for service: %@; Error: %@", cbService, error);
+  NSString *log = [NSString stringWithFormat:@"Info: CBPeripheral did discover characteristics for service: %@; Error: %@", cbService, error];
+  [[Logger sharedManager] sendLogToMainVC:log];
+  
   [self.services[cbService.UUID] discoverCharacteristics];
 }
 
@@ -147,13 +162,8 @@
     return;
   }
   
-  NSLog(@"Info: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error);
-  
-  AMService *service = self.services[cbCharacteristic.service.UUID];
-  AMCharacteristics *characteristic = service.characteristics[cbCharacteristic.UUID];
-  
-  NSString *stringFromData = [[NSString alloc] initWithData:cbCharacteristic.value encoding:NSUTF8StringEncoding];
-  characteristic.charValue = stringFromData;
+  NSString *log = [NSString stringWithFormat:@"Info: CBPeripheral did update value for characteristic: %@; Error: %@", cbCharacteristic, error];
+  [[Logger sharedManager] sendLogToMainVC:log];
   
   [self.udpManager didSendDataWithValue:cbCharacteristic.value];
 }
@@ -163,8 +173,9 @@
 // - didModifyServices
 - (void)peripheral:(CBPeripheral *)cbPripheral didModifyServices:(NSArray *)invalidatedCBServices {
   
-  NSLog(@"Info: CBPeripheral did modify services: %@", invalidatedCBServices);
-  
+  NSString *log = [NSString stringWithFormat:@"Info: CBPeripheral did modify services: %@", invalidatedCBServices];
+  [[Logger sharedManager] sendLogToMainVC:log];
+    
   NSArray *serviceUUIDs = [invalidatedCBServices valueForKey:@"UUID"];
   [self.services removeObjectsForKeys:serviceUUIDs];
 }

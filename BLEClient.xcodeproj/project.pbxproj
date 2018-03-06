@@ -13,13 +13,14 @@
 		770B73B920288D310099BC63 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 770B73B820288D310099BC63 /* AppDelegate.m */; };
 		770B73BC20288D310099BC63 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 770B73BB20288D310099BC63 /* MainViewController.m */; };
 		770B73BF20288D310099BC63 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 770B73BD20288D310099BC63 /* Main.storyboard */; };
-		770B73C120288D310099BC63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 770B73C020288D310099BC63 /* Assets.xcassets */; };
 		770B73C420288D310099BC63 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 770B73C220288D310099BC63 /* LaunchScreen.storyboard */; };
 		770B73C720288D310099BC63 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 770B73C620288D310099BC63 /* main.m */; };
 		7714E858203C57FD00AEAA33 /* BLECentralManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7714E857203C57FD00AEAA33 /* BLECentralManager.m */; };
 		7775689F203318E8006CCC57 /* UDPManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7775689E203318E8006CCC57 /* UDPManager.m */; };
 		778CF08F202B223C0018B009 /* CharTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 778CF08E202B223C0018B009 /* CharTableViewCell.m */; };
 		778CF092202DA1960018B009 /* Periphery.m in Sources */ = {isa = PBXBuildFile; fileRef = 778CF091202DA1960018B009 /* Periphery.m */; };
+		779A1FF4204D379900CE4139 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 779A1FF3204D379900CE4139 /* Assets.xcassets */; };
+		779A1FF7204D61CD00CE4139 /* Logger.m in Sources */ = {isa = PBXBuildFile; fileRef = 779A1FF6204D61CD00CE4139 /* Logger.m */; };
 		77B904A1203C51770050DD0E /* AMService.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B904A0203C51770050DD0E /* AMService.m */; };
 		77B904A5203C51AC0050DD0E /* AMCharacteristics.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B904A4203C51AC0050DD0E /* AMCharacteristics.m */; };
 		77B904A9203C52810050DD0E /* AMPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = 77B904A8203C52810050DD0E /* AMPeripheral.m */; };
@@ -39,7 +40,6 @@
 		770B73BA20288D310099BC63 /* MainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		770B73BB20288D310099BC63 /* MainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		770B73BE20288D310099BC63 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		770B73C020288D310099BC63 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		770B73C320288D310099BC63 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		770B73C520288D310099BC63 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		770B73C620288D310099BC63 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -51,6 +51,9 @@
 		778CF08E202B223C0018B009 /* CharTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CharTableViewCell.m; sourceTree = "<group>"; };
 		778CF090202DA1960018B009 /* Periphery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Periphery.h; sourceTree = "<group>"; };
 		778CF091202DA1960018B009 /* Periphery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Periphery.m; sourceTree = "<group>"; };
+		779A1FF3204D379900CE4139 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		779A1FF5204D61CD00CE4139 /* Logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
+		779A1FF6204D61CD00CE4139 /* Logger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Logger.m; sourceTree = "<group>"; };
 		77B9049F203C51770050DD0E /* AMService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMService.h; sourceTree = "<group>"; };
 		77B904A0203C51770050DD0E /* AMService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMService.m; sourceTree = "<group>"; };
 		77B904A3203C51AC0050DD0E /* AMCharacteristics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMCharacteristics.h; sourceTree = "<group>"; };
@@ -135,10 +138,12 @@
 		770B73B620288D310099BC63 /* BLEClient */ = {
 			isa = PBXGroup;
 			children = (
+				779A1FF3204D379900CE4139 /* Assets.xcassets */,
 				770B73B720288D310099BC63 /* AppDelegate.h */,
 				770B73B820288D310099BC63 /* AppDelegate.m */,
 				7714E859203D408200AEAA33 /* BLEOld */,
 				77039F152036EF8200BE574C /* View */,
+				779A1FF8204D61D200CE4139 /* Logger */,
 				77B904AB203C52B50050DD0E /* UDPManager */,
 				77039F142036EF1E00BE574C /* BLEManager */,
 				77DA1CFA2045829500063EE5 /* Location */,
@@ -146,7 +151,6 @@
 				770B73BB20288D310099BC63 /* MainViewController.m */,
 				778CF090202DA1960018B009 /* Periphery.h */,
 				778CF091202DA1960018B009 /* Periphery.m */,
-				770B73C020288D310099BC63 /* Assets.xcassets */,
 				770B73BD20288D310099BC63 /* Main.storyboard */,
 				770B73C220288D310099BC63 /* LaunchScreen.storyboard */,
 				770B73C520288D310099BC63 /* Info.plist */,
@@ -162,6 +166,15 @@
 				77039F122035D66800BE574C /* BLEManager.m */,
 			);
 			path = BLEOld;
+			sourceTree = "<group>";
+		};
+		779A1FF8204D61D200CE4139 /* Logger */ = {
+			isa = PBXGroup;
+			children = (
+				779A1FF5204D61CD00CE4139 /* Logger.h */,
+				779A1FF6204D61CD00CE4139 /* Logger.m */,
+			);
+			path = Logger;
 			sourceTree = "<group>";
 		};
 		77B904A2203C51850050DD0E /* Service */ = {
@@ -284,7 +297,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				770B73C420288D310099BC63 /* LaunchScreen.storyboard in Resources */,
-				770B73C120288D310099BC63 /* Assets.xcassets in Resources */,
+				779A1FF4204D379900CE4139 /* Assets.xcassets in Resources */,
 				770B73BF20288D310099BC63 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -349,6 +362,7 @@
 				77039F132035D66800BE574C /* BLEManager.m in Sources */,
 				77B904A5203C51AC0050DD0E /* AMCharacteristics.m in Sources */,
 				770B73C720288D310099BC63 /* main.m in Sources */,
+				779A1FF7204D61CD00CE4139 /* Logger.m in Sources */,
 				77B904A9203C52810050DD0E /* AMPeripheral.m in Sources */,
 				7714E858203C57FD00AEAA33 /* BLECentralManager.m in Sources */,
 				7706A1D32043EF6300CB3FB7 /* BLESession.m in Sources */,
@@ -494,6 +508,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = RA8RP8Z7ML;
 				INFOPLIST_FILE = BLEClient/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ITMak.BLEClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -509,6 +524,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = RA8RP8Z7ML;
 				INFOPLIST_FILE = BLEClient/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ITMak.BLEClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";

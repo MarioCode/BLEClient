@@ -12,13 +12,11 @@
 @interface AMCharacteristics : NSObject
 
 @property (nonatomic, strong, readonly) CBCharacteristic *CBCharacteristic;
-@property (nonatomic, readwrite) NSString *charValue;
-@property (nonatomic) BOOL isWrite;
 
 - (instancetype)initWith:(CBCharacteristic *)cbCharacteristic;
 
 - (void)readValue;
-- (void)writeValue:(NSString *)value;
+- (void)writeValue:(NSData *)data;
 - (void)setNotifyValue:(BOOL)enabled;
 
 @end

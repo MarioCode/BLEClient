@@ -10,10 +10,6 @@
 
 @interface CharTableViewCell : UITableViewCell
 
-@property (weak, nonatomic) IBOutlet UILabel *readLabel;
-@property (weak, nonatomic) IBOutlet UILabel *writeLabel;
-@property (weak, nonatomic) IBOutlet UILabel *notifyLabel;
-@property (weak, nonatomic) IBOutlet UILabel *valueLabel;
-@property (weak, nonatomic) IBOutlet UILabel *uuidLabel;
+@property (weak, nonatomic) IBOutlet UILabel *log;
 
 @end

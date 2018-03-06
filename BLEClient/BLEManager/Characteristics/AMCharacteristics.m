@@ -25,9 +25,6 @@
   if (self != nil) {
     if (cbCharacteristic != nil) {
       _CBCharacteristic = cbCharacteristic;
-      
-      NSString *stringFromData = [[NSString alloc] initWithData:cbCharacteristic.value encoding:NSUTF8StringEncoding];
-      self.charValue = stringFromData;
     }
     else
       self = nil;
@@ -41,16 +38,20 @@
 #pragma mark Handheld Methods
 
 
-- (void)readValue {
-  if (self.CBCharacteristic.properties & CBCharacteristicPropertyRead)
+- (void)readValueForCharacteristic {
+  if (self.CBCharacteristic.properties & CBCharacteristicPropertyRead) {
     [self.CBCharacteristic.service.peripheral readValueForCharacteristic:self.CBCharacteristic];
+  }
 }
 
 
-- (void)writeValue:(NSString *) value {
-  if (self.isWrite) {
-    [self.CBCharacteristic.service.peripheral writeValue:[[self randomStringWithLength:7] dataUsingEncoding:NSASCIIStringEncoding] forCharacteristic:self.CBCharacteristic type:CBCharacteristicWriteWithResponse];
-  }
+- (void)readValueForDescriptor {
+
+}
+
+
+- (void)writeValue:(NSData *) data {
+    [self.CBCharacteristic.service.peripheral writeValue:data forCharacteristic:self.CBCharacteristic type:CBCharacteristicWriteWithResponse];
 }
 
 
@@ -58,18 +59,5 @@
   [self.CBCharacteristic.service.peripheral setNotifyValue:enabled forCharacteristic:self.CBCharacteristic];
 }
 
-
-//TODO: For test, remove it
--(NSString *) randomStringWithLength: (int) len {
-  
-  NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  NSMutableString *randomString = [NSMutableString stringWithCapacity: len];
-  
-  for (int i = 0; i < len; i++) {
-    [randomString appendFormat: @"%C", [letters characterAtIndex:(NSUInteger)arc4random_uniform((u_int32_t)[letters length])]];
-  }
-  
-  return randomString;
-}
 
 @end

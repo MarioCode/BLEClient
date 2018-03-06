@@ -42,17 +42,16 @@
 // Search for a service characteristic
 - (void)discoverCharacteristics {
   
+  int count = 1;
   for (CBCharacteristic *characteristic in self.Service.characteristics) {
     
     AMCharacteristics *amChar = [[AMCharacteristics alloc] initWith:characteristic];
     [amChar setNotifyValue:(characteristic.properties & CBCharacteristicPropertyNotify)];
-    [amChar readValue];
+    //[amChar readValue];
     
-    if (characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) {
-      amChar.isWrite = true;
-    }
+    NSString *log = [NSString stringWithFormat:@"Found %d characteristic - %@", count++,  amChar.CBCharacteristic];
+    [[Logger sharedManager] sendLogToMainVC:log];
 
-    NSLog(@"Info Char - %@", amChar.CBCharacteristic);
     self.characteristics[characteristic.UUID] = amChar;
   }
 }

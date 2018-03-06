@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Periphery.h"
-
+#import "Logger.h"
 
 @interface AMService: NSObject
 
