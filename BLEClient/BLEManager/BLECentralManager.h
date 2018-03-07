@@ -22,7 +22,7 @@
 
 + (instancetype)sharedManager;
 
-- (void)scanForPeripherals;
+- (void)startScanForPeripherals;
 - (void)stopScanForPeripherals;
 - (void)connectPeripheral:(AMPeripheral *)peripheral;
 - (void)disconnectPeripheral:(AMPeripheral *)peripheral;

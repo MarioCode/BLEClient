@@ -51,9 +51,9 @@
 
 
 - (IBAction)start:(id)sender {
-  [[BLECentralManager sharedManager] scanForPeripherals];
+  [BLECentralManager sharedManager];
   
-  [[LocationManager sharedManager] startTracking];
+  //[[LocationManager sharedManager] startTracking];
 }
 
 
