@@ -8,6 +8,8 @@
 
 #import "BLEManager.h"
 
+
+
 @interface BLEManager () <CBCentralManagerDelegate, CBPeripheralDelegate>
 
 @property (strong, nonatomic) CBCentralManager *centralManager;
@@ -17,32 +19,32 @@
 
 @implementation BLEManager
 
-
 - (id)init {
   self = [super init];
-   if (self)
-     [self initBLEManager];
+  if (self != nil)
+  {
+    _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
+
+    _periphWithChar  = [[NSMutableDictionary alloc] init];
+    _peripheralList = [[NSMutableArray alloc] init];
+    _characteristicslList = [[NSMutableArray alloc] init];
+    _peripheryInfo = [PeripheryInfo sharedInstance];
+  }
   
   return self;
 }
 
-+ (BLEManager *)sharedInstance {
-  static dispatch_once_t onceToken;
-  static BLEManager *singleton = nil;
-  dispatch_once(&onceToken, ^{
-    singleton = [[BLEManager alloc] init];
-  });
-  return singleton;
-}
-
-
-- (void)initBLEManager {
++ (instancetype)sharedInstance {
   
-  _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-  _peripheralList = [[NSMutableArray alloc] init];
-  _characteristicslList = [[NSMutableArray alloc] init];
-  _charValuelList = [[NSMutableArray alloc] init];
-  _peripheryInfo = [PeripheryInfo sharedInstance];
+  static BLEManager *sharedManager = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    if (sharedManager == nil) {
+      sharedManager = [[BLEManager alloc] init];
+    }
+  });
+  
+  return sharedManager;
 }
 
 
@@ -50,7 +52,6 @@
 #pragma mark Bluetooth Low Energy
 
 
-// - centralManagerDidUpdateState
 // Update status of central manager (current device)
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
   
@@ -72,53 +73,38 @@
 }
 
 
-// - didDiscoverPeripheral
 // Find peripheral devices and update table
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
   
-  if (RSSI.intValue < -30) {
-    // return;
-    // Uncomment above to ignore device with less signal strength
-  }
-  
-  NSString *name = peripheral.name ? peripheral.name : @"nil";
-  
-  if ([name isEqual: _peripheryInfo.deviceName]) {
-    // Uncomment this "return" to get the whole list of devices
-    //return;
+  if ([peripheral.name isEqual: @"G5 SE"] || [peripheral.name isEqual: @"Galaxy J2 Prime"]) {
+    CBPeripheral *per = peripheral;
+    per.delegate = self;
     
-    [self stopScanning];
-    _trackerPeripheral = peripheral;
-    _trackerPeripheral.delegate = self;
-    [_centralManager connectPeripheral:_trackerPeripheral options:nil];
+    [_centralManager connectPeripheral:per options:nil];
+    
+    if (![_peripheralList containsObject:peripheral])
+      [_peripheralList addObject:peripheral];
+    
+    [self.delegate reloadTable:@"Devices"];
+    NSLog(@"Connecting to peripheral %@", per.name);
   }
-  
-  if (![_peripheralList containsObject:peripheral])
-    [_peripheralList addObject:peripheral];
-  [self.delegate reloadTable:@"Devices"];
 }
 
-// - didConnectPeripheral
+
 // Connect to selected peripheral device
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
   [self.delegate changeStatusLabel:@"Connect status: Connected!" withType:@"Connect"];
+  [self.delegate changeServiceUUIDLabel: [NSString stringWithFormat:@"%lu", (unsigned long)_peripheryInfo.services.count]];
   [self clearData];
   
   NSLog(@"Connected!");
-  [_trackerPeripheral discoverServices:_peripheryInfo.services];
-  
-  if (_peripheryInfo.services.count > 1)
-    [self.delegate changeServiceUUIDLabel:@"More than one"];
-  else
-    [self.delegate changeServiceUUIDLabel:[[_peripheryInfo.services objectAtIndex:0] UUIDString]];
 }
 
 
-// - didDiscoverServices
 // Discover characteristics for services
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error {
   
-  for (CBService *service in _trackerPeripheral.services) {
+  for (CBService *service in peripheral.services) {
     NSLog(@"Service: %@", service);
     [peripheral discoverCharacteristics:_peripheryInfo.characteristics forService:service];
   }
@@ -148,7 +134,7 @@
   [self.delegate reloadTable:@"Characteristics"];
 }
 
-// - didUpdateValueForCharacteristic
+
 // Getting service characteristics (read)
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
   
@@ -157,20 +143,11 @@
     return;
   }
   
-  NSString *stringFromData = [[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding];
-  NSLog(@"Read data: %@", stringFromData);
+  NSLog(@"Read data: %@", [[NSString alloc] initWithData:characteristic.value encoding:NSUTF8StringEncoding]);
   
-  int count = 0;
-  if (_charValuelList.count == _characteristicslList.count) {
-    for (CBCharacteristic *charact in _characteristicslList) {
-      if ([charact isEqual:characteristic])
-        [_charValuelList replaceObjectAtIndex:count withObject:stringFromData];
-      
-      count++;
-    }
-  } else {
-    [_charValuelList addObject:stringFromData];
-  }
+  for (CBCharacteristic __strong *charact in _characteristicslList)
+    if ([charact isEqual:characteristic])
+      charact = characteristic;
   
   [self.delegate reloadTable:@"Characteristics"];
 }
@@ -188,11 +165,13 @@
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
   
   NSLog(@"Disconnect from %@", peripheral.identifier.UUIDString);
-
   [self.delegate changeStatusLabel:@"Connect status: Disconnect" withType:@"Connect"];
-  //[self startScanning:1 with:true];
   
-  [_centralManager connectPeripheral:_trackerPeripheral options:nil];
+  //[self startScanning:1 with:true];
+  for (CBPeripheral *p in _peripheralList) {
+    if ([p isEqual:peripheral])
+      [_centralManager connectPeripheral:p options:nil];
+  }
 }
 
 
@@ -236,43 +215,23 @@
 
 
 // Read data from select characteristic
-- (void)readData: (NSInteger)index {
+- (void)readData: (NSInteger)deviceIndex withCharIndex:(NSInteger)charIndex {
+  
   if (_characteristicslList.count == 0)
     return;
   
-  CBCharacteristic *ch = [_characteristicslList objectAtIndex:index];
-  
-  [_trackerPeripheral readValueForCharacteristic:ch];
+  CBCharacteristic *ch = [_characteristicslList objectAtIndex:charIndex];
+  [[_peripheralList objectAtIndex:deviceIndex] readValueForCharacteristic:ch];
 }
 
 
 // Write new value for device's characteristic
-- (void)writeData: (NSInteger)index with:(NSString *)text {
+- (void)writeData: (NSInteger)deviceIndex withCharIndex:(NSInteger)charIndex withText:(NSString *)text {
   if (_characteristicslList.count == 0)
     return;
   
-  [_trackerPeripheral writeValue:[text dataUsingEncoding:NSASCIIStringEncoding]
-               forCharacteristic:[_characteristicslList
-                                  objectAtIndex:index] type:CBCharacteristicWriteWithoutResponse];
-}
-
-
-// Update main peripheral device
-- (void)setNewPeripheral: (NSInteger)index {
-  
-  _trackerPeripheral = [_peripheralList objectAtIndex:index];
-  _trackerPeripheral.delegate = self;
-  
-  NSLog(@"Connecting to peripheral %@", _trackerPeripheral.name);
-  
- [_centralManager connectPeripheral:_trackerPeripheral options:nil];
-}
-
-
-// After manual input, install ONLY ONE UUID
-- (void)setServiceUUID: (NSString *)uuid {
-  [_peripheryInfo.services removeAllObjects];
-  [_peripheryInfo.services addObject:[CBUUID UUIDWithString:uuid]];
+  [[_peripheralList objectAtIndex:deviceIndex] writeValue:[text dataUsingEncoding:NSASCIIStringEncoding]
+                                        forCharacteristic:[_characteristicslList objectAtIndex:charIndex] type:CBCharacteristicWriteWithoutResponse];
 }
 
 
@@ -285,19 +244,14 @@
 }
 
 
-// Hands disconnected
-- (void)doDisconnect {
-  if (_trackerPeripheral != nil) {
-    [_centralManager cancelPeripheralConnection:_trackerPeripheral];
-    [self clearData];
-    _isScanning = false;
-  }
-}
-
-
 // Stop scanning
 - (void)stopScanning {
   NSLog(@"Stop");
+  
+  for (CBPeripheral *p in _peripheralList) {
+    [p discoverServices: _peripheryInfo.services];
+  }
+  
   _isScanning = false;
   [self.delegate stopScan];
   [_centralManager stopScan];
@@ -306,7 +260,7 @@
 
 // Clearing current data
 - (void) clearData {
-  [_charValuelList removeAllObjects];
+  
   [_characteristicslList removeAllObjects];
   [self.delegate reloadTable:@"Devices"];
   [self.delegate reloadTable:@"Characteristics"];

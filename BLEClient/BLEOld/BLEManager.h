@@ -32,21 +32,18 @@
 @property (nonatomic, weak) id <BLEManagerDelegate> delegate;
 @property (nonatomic, strong) NSMutableArray <CBPeripheral *> *peripheralList;
 @property (nonatomic, strong) NSMutableArray <CBCharacteristic *> *characteristicslList;
-@property (nonatomic, strong) NSMutableArray *charValuelList;
 @property (nonatomic, strong) PeripheryInfo *peripheryInfo;
+@property (nonatomic, readonly) NSMutableDictionary *periphWithChar;
 
 @property BOOL isScanning;
 
-+ (BLEManager *)sharedInstance;
++ (instancetype)sharedInstance;
 
 - (void)startScanning: (int)typeScan with:(BOOL)allScan;
 - (void)stopScanning;
 - (void)clearData;
-- (void)readData: (NSInteger)index;
-- (void)writeData: (NSInteger)index with:(NSString *)text;
-- (void)setNewPeripheral: (NSInteger)index;
-- (void)doDisconnect;
-- (void)setServiceUUID: (NSString *)uuid;
+- (void)readData: (NSInteger)deviceIndex withCharIndex:(NSInteger)charIndex;
+- (void)writeData: (NSInteger)deviceIndex withCharIndex:(NSInteger)charIndex withText:(NSString *)text;
 - (NSString *)managerState;
 
 @end

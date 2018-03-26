@@ -8,9 +8,15 @@
 
 #import <Foundation/Foundation.h>
 #import "GCDAsyncUdpSocket.h"
+#import "Logger.h"
+
+@class AMPeripheral;
 
 @interface UDPManager : NSObject
 
-- (void)sendMsg:(NSString *) textMsg;
+@property (nonatomic, strong) AMPeripheral *peripheral;
+
+- (void)closeSocket;
+- (void)didSendDataWithValue:(NSData *) data;
 
 @end
