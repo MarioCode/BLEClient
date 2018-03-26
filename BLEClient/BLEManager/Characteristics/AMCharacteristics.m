@@ -51,9 +51,4 @@
 }
 
 
-- (void)setNotifyValue:(BOOL)enabled  {
- // [self.CBCharacteristic.service.peripheral setNotifyValue:enabled forCharacteristic:self.CBCharacteristic];
-}
-
-
 @end

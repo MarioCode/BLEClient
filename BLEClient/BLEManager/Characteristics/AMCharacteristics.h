@@ -21,8 +21,6 @@ typedef enum {
 @property (nonatomic, readwrite) CharacteristicType characteristicType;
 
 - (instancetype)initWith:(CBCharacteristic *)cbCharacteristic;
-
 - (void)writeValue:(NSData *)data;
-- (void)setNotifyValue:(BOOL)enabled;
 
 @end
