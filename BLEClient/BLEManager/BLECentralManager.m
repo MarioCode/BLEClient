@@ -194,7 +194,7 @@
 // Find all or defined peripheral devices
 - (void)centralManager:(CBCentralManager *)cbCentral didDiscoverPeripheral:(CBPeripheral *)cbPeripheral advertisementData:(NSDictionary*) advertisementData RSSI:(NSNumber *)RSSI {
   
-  if ([cbPeripheral.name isEqual: @"Mishiko M103_"]) {
+  if ([cbPeripheral.name isEqual: [PeripheryInfo sharedInstance].deviceName]) {
     if (self.sessions[cbPeripheral.identifier] == nil) {
       AMPeripheral *peripheral = [[AMPeripheral alloc] initWith:cbPeripheral];
       BLESession *session = [[BLESession alloc] initWith:peripheral];
@@ -241,7 +241,7 @@
   
   NSString *log = [NSString stringWithFormat:@"ErrorCB: CBCentralManager did disconnect peripheral: %@; Error: %@", cbPeripheral, error];
   [[Logger sharedManager] sendLogToMainVC:log];
-
+  [LocationManager.sharedManager stopTracking];
   [self.CBCentralManager cancelPeripheralConnection:cbPeripheral];
   BLESession *session = self.sessions[cbPeripheral.identifier];
   [session.udpSocket closeSocket];
@@ -258,35 +258,9 @@
 - (void) getAndUpdateCoordinate {
   
   if ([LocationManager sharedManager].currentLocation) {
-    CLLocationCoordinate2D coord = [LocationManager sharedManager].currentLocation.coordinate;
-    
     for (CBUUID * key in self.sessions) {
       BLESession *session = [self.sessions objectForKey:key];
-      NSString *strCoordinate = [NSString stringWithFormat:@"<%f : %f> Speed = %f", coord.latitude, coord.longitude, [LocationManager sharedManager].currentLocation.speed];
-      [session.peripheral updateDeviceLocation:strCoordinate];
-    }
-  }
-}
-
-
-// Temporarily. For the test and retrieve information.
-- (void)getAllInfo {
-  for (CBUUID *  key in self.sessions) {
-    BLESession *s = [self.sessions objectForKey:key];
-    
-    for (CBUUID *  key in s.peripheral.services) {
-      AMService *value = [s.peripheral.services objectForKey:key];
-      // NSLog(@"Service UUID - %@", value.Service.UUID);
-      
-      NSString *log = [NSString stringWithFormat:@"Service UUID - %@", value.Service.UUID];
-      [[Logger sharedManager] sendLogToMainVC:log];
-      
-      for (CBUUID *key2 in value.characteristics) {
-        
-        AMCharacteristics *charVal = [value.characteristics objectForKey:key2];
-        [charVal readValue];
-        //NSLog(@"Val - %@, Write - %d", charVal.charValue, charVal.isWrite);
-      }
+      [session.peripheral updateDeviceLocation:[LocationManager sharedManager].currentLocation];
     }
   }
 }

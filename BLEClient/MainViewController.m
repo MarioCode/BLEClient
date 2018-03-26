@@ -52,8 +52,7 @@
 
 - (IBAction)start:(id)sender {
   [BLECentralManager sharedManager];
-  
-  //[[LocationManager sharedManager] startTracking];
+  [[LocationManager sharedManager] startTracking];
 }
 
 
@@ -62,8 +61,9 @@
 }
 
 
-- (IBAction)getAllInfo:(id)sender {
-  [[BLECentralManager sharedManager] getAllInfo];
+- (IBAction)clearLogs:(id)sender {
+    [self.logs removeAllObjects];
+    [self.tableView reloadData];
 }
 
 // Config cell

@@ -87,10 +87,13 @@
 }
 
 
-- (void)disconnectSocket {
+- (void)doDisconnectSocket {
   [self.udpSocket close];
 }
 
+- (void)udpSocketDidClose:(GCDAsyncUdpSocket *)sock withError:(NSError  * _Nullable)error {
+    NSLog(@"UdpSocket did close");
+}
 
 #pragma mark -
 #pragma mark Helpers

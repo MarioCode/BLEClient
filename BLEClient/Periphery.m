@@ -29,29 +29,14 @@
   self = [super init];
   if (self) {
     _services = [[NSMutableArray <CBUUID *> alloc] init];
-    
-    
-    //[_services addObject:[CBUUID UUIDWithString:@"0000FFB1-0000-1000-8000-00805f8b34fb"]];
-
-    //[_services addObject:[CBUUID UUIDWithString:@"0000ffa1-0000-1000-8000-00805F8B34FB"]];
-    
-    [_services addObject:[CBUUID UUIDWithString:@"0000ff00-0000-1000-8000-00805f9b34fb"]];
-    //[_services addObject:[CBUUID UUIDWithString:@"0000ffb1-0000-1000-8000-00805F8B34FB"]];
+    [_services addObject:[CBUUID UUIDWithString:@"0000FF00-0000-1000-8000-00805F9B34FB"]];
 
     _characteristics = [[NSMutableArray <CBUUID *> alloc] init];
-    
-    //[_characteristics addObject:[CBUUID UUIDWithString:@"0000FF21-0000-1000-8000-00805f8b34fb"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000FF01-0000-1000-8000-00805F9B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000FF02-0000-1000-8000-00805F9B34FB"]];
+    [_characteristics addObject:[CBUUID UUIDWithString:@"0000FF03-0000-1000-8000-00805F9B34FB"]];
 
-//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff11-0000-1000-8000-00805F8B34FB"]];
-//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff12-0000-1000-8000-00805F8B34FB"]];
-//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff13-0000-1000-8000-00805F8B34FB"]];
-//
-      [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff01-0000-1000-8000-00805f9b34fb"]];
-      [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff02-0000-1000-8000-00805f9b34fb"]];
-//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff23-0000-1000-8000-00805F8B34FB"]];
-//    [_characteristics addObject:[CBUUID UUIDWithString:@"0000ff24-0000-1000-8000-00805F8B34FB"]];
-
-    _deviceName = @"G5 SE";
+    _deviceName = @"Mishiko M103";
   }
   
   return self;

@@ -7,7 +7,6 @@
 //
 
 #import "AMService.h"
-#import "AMCharacteristics.h"
 
 @implementation AMService
 
@@ -38,6 +37,17 @@
 #pragma mark -
 #pragma mark Methods
 
+- (AMCharacteristics*) getCharacteristic:(CharacteristicType) type {
+    for (CBUUID *key in self.characteristics) {
+        AMCharacteristics *charVal = [self.characteristics objectForKey:key];
+        
+        if (charVal.characteristicType == type) {
+            return charVal;
+        }
+    }
+    
+    return nil;
+}
 
 // Search for a service characteristic
 - (void)discoverCharacteristics {
@@ -47,7 +57,6 @@
     
     AMCharacteristics *amChar = [[AMCharacteristics alloc] initWith:characteristic];
     [amChar setNotifyValue:(characteristic.properties & CBCharacteristicPropertyNotify)];
-    //[amChar readValue];
     
     NSString *log = [NSString stringWithFormat:@"Found %d characteristic - %@", count++,  amChar.CBCharacteristic];
     [[Logger sharedManager] sendLogToMainVC:log];

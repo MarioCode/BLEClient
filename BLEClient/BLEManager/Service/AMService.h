@@ -10,13 +10,15 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Periphery.h"
 #import "Logger.h"
+#import "AMCharacteristics.h"
 
 @interface AMService: NSObject
 
-@property (nonatomic, strong, readonly)CBService *Service;
+@property (nonatomic, strong, readonly) CBService *Service;
 @property (nonatomic, strong, readonly) NSMutableDictionary *characteristics;
 
 - (instancetype)initWith:(CBService *)cbService;
 - (void)discoverCharacteristics;
+- (AMCharacteristics*) getCharacteristic:(CharacteristicType) type;
 
 @end

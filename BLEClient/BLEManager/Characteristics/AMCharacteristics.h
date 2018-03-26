@@ -9,13 +9,19 @@
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 
+typedef enum {
+    READ_UDP = 1,
+    WRITE_UDP = 2,
+    LOCATION = 3
+} CharacteristicType;
+
 @interface AMCharacteristics : NSObject
 
 @property (nonatomic, strong, readonly) CBCharacteristic *CBCharacteristic;
+@property (nonatomic, readwrite) CharacteristicType characteristicType;
 
 - (instancetype)initWith:(CBCharacteristic *)cbCharacteristic;
 
-- (void)readValue;
 - (void)writeValue:(NSData *)data;
 - (void)setNotifyValue:(BOOL)enabled;
 

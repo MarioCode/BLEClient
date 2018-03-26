@@ -26,6 +26,5 @@
 - (void)stopScanForPeripherals;
 - (void)connectPeripheral:(AMPeripheral *)peripheral;
 - (void)disconnectPeripheral:(AMPeripheral *)peripheral;
-- (void)getAllInfo;
 
 @end

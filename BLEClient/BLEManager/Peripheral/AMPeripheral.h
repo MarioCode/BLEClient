@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
+#import "LocationManager.h"
 #import "Periphery.h"
 #import "AMService.h"
 
@@ -25,7 +26,7 @@
 - (BOOL)isConnected;
 - (void)receivingDataFromUDP:(NSData *)recieveData;
 - (void)didConnectAndDiscoverServices;
-- (void)updateDeviceLocation:(NSString *)coordinates;
+- (void)updateDeviceLocation:(CLLocation *)location;
 - (void)setForCanUpdateCoordinate:(NSInteger)RSSI;
 
 @end
